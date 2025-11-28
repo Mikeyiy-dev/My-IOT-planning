@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <h2 id="hello">Xin chào...</h2>
+    <div class="card">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        // 1. Kiểm tra đăng nhập
+        const currentUser = localStorage.getItem('myUser');
+        if(!currentUser) window.location.href = 'login.html';
+        document.getElementById('hello').innerText = "Xin chào: " + currentUser;
+
+        // 2. Cấu hình biểu đồ
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Dữ liệu cảm biến',
+                    data: [],
+                    borderColor: 'blue',
+                    tension: 0.3
+                }]
+            }
+        });
+
+        // 3. Nhận dữ liệu Real-time
+        const socket = io();
+        socket.on('sensor_data', (data) => {
+            // Chỉ hiển thị dữ liệu của đúng User này
+            // Topic dạng: demo_iot_vn_2025/TEN_USER/thietbi
+            if(data.topic.includes(`/${currentUser}/`)) {
+                
+                const time = new Date().toLocaleTimeString();
+                
+                // Đẩy data vào biểu đồ
+                if(chart.data.labels.length > 20) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.data.labels.push(time);
+                chart.data.datasets[0].data.push(data.value);
+                chart.update();
+            }
+        });
+    </script>
+</body>
+</html>
