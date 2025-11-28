@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập IoT</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: sans-serif;
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+        .glass-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px); /* Hiệu ứng kính mờ */
+            padding: 40px; border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 320px; text-align: center; color: white;
+        }
+        input {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: none; border-radius: 25px; outline: none;
+            background: rgba(255,255,255,0.9); box-sizing: border-box;
+        }
+        .btn-login {
+            width: 100%; padding: 12px; margin-top: 15px;
+            border: none; border-radius: 25px;
+            background: #0072ff; color: white; font-weight: bold; cursor: pointer;
+        }
+        .btn-register {
+            width: 100%; padding: 8px; margin-top: 10px;
+            border: 1px solid white; border-radius: 25px;
+            background: transparent; color: white; cursor: pointer;
+        }
+        .btn-register:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
+    <div class="glass-box">
+        <img src="logo.png" style="width: 80px; border-radius: 50%; margin-bottom: 15px;">
+        <h2>WELCOME</h2>
+        <input type="text" id="username" placeholder="Tên đăng nhập">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        
+        <button class="btn-login" onclick="handleAuth('login')">ĐĂNG NHẬP</button>
+        <button class="btn-register" onclick="handleAuth('register')">Đăng ký mới</button>
+    </div>
+
+    <script>
+        async function handleAuth(type) {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if(!u || !p) return alert("Vui lòng nhập đủ thông tin!");
+
+            const url = type === 'login' ? '/login' : '/register';
+            
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: u, password: p})
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                if(type === 'login') {
+                    localStorage.setItem('myUser', u); // Lưu tên user
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert(data.message); // Thông báo đăng ký thành công
+                }
+            } else {
+                alert(data.message);
+            }
+        }
+    </script>
+</body>
+</html>
