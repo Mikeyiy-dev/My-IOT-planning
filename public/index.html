@@ -6,10 +6,9 @@
     <style>
         body {
             margin: 0; padding: 0;
-            /* Lưu ý: Đảm bảo bạn có file background.jpg trong cùng thư mục */
             background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Đổi font một chút cho hiện đại hơn */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             height: 100vh; display: flex; justify-content: center; align-items: center;
         }
         .glass-box {
@@ -22,32 +21,33 @@
             width: 320px; text-align: center; color: white;
         }
         
-        /* --- PHẦN CSS MỚI THÊM VÀ CHỈNH SỬA --- */
-        h2 {
-            margin-bottom: 5px; /* Giảm khoảng cách dưới tiêu đề chính */
-            font-weight: 600;
-        }
+        h2 { margin-bottom: 5px; font-weight: 600; }
         .slogan {
-            margin: 0 0 25px 0; /* Căn lề dưới để đẩy các ô input xuống */
-            font-size: 0.9em;   /* Kích thước chữ nhỏ hơn tiêu đề chính */
-            opacity: 0.8;       /* Làm mờ nhẹ để không lấn át tiêu đề chính */
-            font-weight: 300;   /* Nét chữ thanh mảnh hơn */
+            margin: 0 0 20px 0; font-size: 0.9em; opacity: 0.8; font-weight: 300;
         }
-        /* -------------------------------------- */
 
         input {
-            width: 100%; padding: 12px; margin: 10px 0;
+            width: 100%; padding: 12px; margin: 8px 0; /* Chỉnh margin nhỏ lại chút cho gọn */
             border: none; border-radius: 25px; outline: none;
             background: rgba(255,255,255,0.9); box-sizing: border-box;
-            font-size: 14px; /* Thêm cỡ chữ cho input dễ nhìn */
+            font-size: 14px;
         }
+        
+        /* CSS cho dòng Quên mật khẩu */
+        .forgot-link {
+            display: block; text-align: right;
+            margin-top: 5px; margin-bottom: 15px; margin-right: 10px;
+            color: #fff; font-size: 13px; text-decoration: none; opacity: 0.9; cursor: pointer;
+        }
+        .forgot-link:hover { text-decoration: underline; opacity: 1; }
+
         .btn-login {
-            width: 100%; padding: 12px; margin-top: 15px;
+            width: 100%; padding: 12px; margin-top: 5px;
             border: none; border-radius: 25px;
             background: #0072ff; color: white; font-weight: bold; cursor: pointer;
-            transition: 0.3s; /* Hiệu ứng mượt khi di chuột */
+            transition: 0.3s;
         }
-        .btn-login:hover { background: #005bb5; } /* Đổi màu nhẹ khi di chuột */
+        .btn-login:hover { background: #005bb5; }
 
         .btn-register {
             width: 100%; padding: 8px; margin-top: 10px;
@@ -63,31 +63,43 @@
         <img src="logo.png" style="width: 80px; border-radius: 50%; margin-bottom: 15px;" alt="Logo">
         
         <h2>Welcome to ShadowFox</h2>
-        
         <p class="slogan">Silent in operation - Powerful in data</p>
+        
+        <!-- THÊM Ô NHẬP EMAIL (QUAN TRỌNG) -->
+        <input type="text" id="email" placeholder="Email (Bắt buộc khi đăng ký)">
+        
         <input type="text" id="username" placeholder="Tên đăng nhập">
         <input type="password" id="password" placeholder="Mật khẩu">
+        
+        <!-- THÊM DÒNG QUÊN MẬT KHẨU -->
+        <a class="forgot-link" onclick="forgotPassword()">Quên mật khẩu?</a>
         
         <button class="btn-login" onclick="handleAuth('login')">ĐĂNG NHẬP</button>
         <button class="btn-register" onclick="handleAuth('register')">Đăng ký mới</button>
     </div>
 
     <script>
+        // Hàm Xử lý Đăng ký / Đăng nhập
         async function handleAuth(type) {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            // Sửa lỗi chính tả ở thông báo alert cũ (thiếu dấu đóng ngoặc)
-            if(!u || !p) return alert("Vui lòng nhập đủ thông tin!");
+            const e = document.getElementById('email').value; // Lấy thêm Email
 
-            // Lưu ý: Phần code fetch này cần có Server Backend thật mới chạy được.
-            // Nếu chỉ chạy giao diện tĩnh thì nó sẽ báo lỗi mạng.
+            // Kiểm tra dữ liệu đầu vào
+            if(type === 'register') {
+                if(!u || !p || !e) return alert("Vui lòng nhập Tên, Mật khẩu và Email để đăng ký!");
+            } else {
+                if(!u || !p) return alert("Vui lòng nhập Tên và Mật khẩu!");
+            }
+
             try {
                 const url = type === 'login' ? '/login' : '/register';
                 
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username: u, password: p})
+                    // Gửi cả Email lên server
+                    body: JSON.stringify({username: u, password: p, email: e})
                 });
                 const data = await res.json();
 
@@ -102,9 +114,34 @@
                     alert(data.message);
                 }
             } catch (error) {
-                console.error("Lỗi kết nối:", error);
-                // Thông báo tạm khi chưa có backend
-                alert("Chức năng này cần kết nối tới Server Backend để hoạt động.");
+                console.error("Lỗi:", error);
+                alert("Không thể kết nối tới Server!");
+            }
+        }
+
+        // Hàm Xử lý Quên mật khẩu
+        async function forgotPassword() {
+            // Hỏi Email người dùng
+            const emailInput = prompt("Nhập Email bạn đã dùng để đăng ký:");
+            if (!emailInput) return; // Nếu bấm hủy thì thôi
+
+            // Gọi lên Server xin cấp lại mật khẩu
+            try {
+                // Thông báo chờ để người dùng biết
+                document.body.style.cursor = "wait"; 
+                
+                const res = await fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: emailInput })
+                });
+                const data = await res.json();
+                
+                document.body.style.cursor = "default";
+                alert(data.message); // Hiện thông báo từ server (Thành công hoặc Lỗi)
+            } catch (error) {
+                document.body.style.cursor = "default";
+                alert("Lỗi kết nối! Kiểm tra lại server.");
             }
         }
     </script>
