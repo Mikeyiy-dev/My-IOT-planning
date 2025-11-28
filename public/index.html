@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập IoT</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            /* Lưu ý: Đảm bảo bạn có file background.jpg trong cùng thư mục */
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Đổi font một chút cho hiện đại hơn */
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+        }
+        .glass-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px; border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 320px; text-align: center; color: white;
+        }
+        
+        /* --- PHẦN CSS MỚI THÊM VÀ CHỈNH SỬA --- */
+        h2 {
+            margin-bottom: 5px; /* Giảm khoảng cách dưới tiêu đề chính */
+            font-weight: 600;
+        }
+        .slogan {
+            margin: 0 0 25px 0; /* Căn lề dưới để đẩy các ô input xuống */
+            font-size: 0.9em;   /* Kích thước chữ nhỏ hơn tiêu đề chính */
+            opacity: 0.8;       /* Làm mờ nhẹ để không lấn át tiêu đề chính */
+            font-weight: 300;   /* Nét chữ thanh mảnh hơn */
+        }
+        /* -------------------------------------- */
+
+        input {
+            width: 100%; padding: 12px; margin: 10px 0;
+            border: none; border-radius: 25px; outline: none;
+            background: rgba(255,255,255,0.9); box-sizing: border-box;
+            font-size: 14px; /* Thêm cỡ chữ cho input dễ nhìn */
+        }
+        .btn-login {
+            width: 100%; padding: 12px; margin-top: 15px;
+            border: none; border-radius: 25px;
+            background: #0072ff; color: white; font-weight: bold; cursor: pointer;
+            transition: 0.3s; /* Hiệu ứng mượt khi di chuột */
+        }
+        .btn-login:hover { background: #005bb5; } /* Đổi màu nhẹ khi di chuột */
+
+        .btn-register {
+            width: 100%; padding: 8px; margin-top: 10px;
+            border: 1px solid white; border-radius: 25px;
+            background: transparent; color: white; cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-register:hover { background: rgba(255,255,255,0.2); }
+    </style>
+</head>
+<body>
+    <div class="glass-box">
+        <img src="logo.png" style="width: 80px; border-radius: 50%; margin-bottom: 15px;" alt="Logo">
+        
+        <h2>Welcome to ShadowFox</h2>
+        
+        <p class="slogan">Silent in operation - Powerful in data</p>
+        <input type="text" id="username" placeholder="Tên đăng nhập">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        
+        <button class="btn-login" onclick="handleAuth('login')">ĐĂNG NHẬP</button>
+        <button class="btn-register" onclick="handleAuth('register')">Đăng ký mới</button>
+    </div>
+
+    <script>
+        async function handleAuth(type) {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            // Sửa lỗi chính tả ở thông báo alert cũ (thiếu dấu đóng ngoặc)
+            if(!u || !p) return alert("Vui lòng nhập đủ thông tin!");
+
+            // Lưu ý: Phần code fetch này cần có Server Backend thật mới chạy được.
+            // Nếu chỉ chạy giao diện tĩnh thì nó sẽ báo lỗi mạng.
+            try {
+                const url = type === 'login' ? '/login' : '/register';
+                
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: u, password: p})
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    if(type === 'login') {
+                        localStorage.setItem('myUser', u); 
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        alert(data.message); 
+                    }
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error("Lỗi kết nối:", error);
+                // Thông báo tạm khi chưa có backend
+                alert("Chức năng này cần kết nối tới Server Backend để hoạt động.");
+            }
+        }
+    </script>
+</body>
+</html>
