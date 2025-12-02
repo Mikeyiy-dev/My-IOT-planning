@@ -48,6 +48,24 @@
         body.dark-mode .upload-zone { background: #1e293b; border-color: #475569; }
         body.dark-mode .pump-card:hover { background: #334155; }
 
+        /* --- CHẾ ĐỘ TRONG SUỐT (GLASSMORPHISM) --- */
+        body.transparent-ui .sidebar,
+        body.transparent-ui .content-container,
+        body.transparent-ui .card {
+            background: rgba(255, 255, 255, 0.25) !important; /* Kính trong suốt */
+            backdrop-filter: blur(15px); /* Làm mờ hậu cảnh */
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        /* Trong suốt trên Dark Mode */
+        body.dark-mode.transparent-ui .sidebar,
+        body.dark-mode.transparent-ui .content-container,
+        body.dark-mode.transparent-ui .card {
+            background: rgba(0, 0, 0, 0.4) !important; /* Kính đen */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
         
         body { 
@@ -366,6 +384,17 @@
                             <div class="setting-info"><h4 data-i18n="settings.dark_mode">Chế độ Tối</h4><p data-i18n="settings.dark_mode_desc">Giao diện tối bảo vệ mắt.</p></div>
                             <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
                         </div>
+
+                         <div class="setting-row">
+                            <div class="setting-info">
+                                <h4>Chế độ Trong suốt</h4>
+                                <p>Làm mờ giao diện để thấy hình nền.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="transparentToggle" onchange="toggleTransparent()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                         
                         <div class="setting-row">
                             <div class="setting-info"><h4 data-i18n="settings.wallpaper">Hình nền</h4><p data-i18n="settings.wallpaper_desc">Tải ảnh từ máy tính.</p></div>
@@ -468,6 +497,13 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('darkModeToggle').checked = true;
             }
+
+            // LOAD TRẠNG THÁI TRONG SUỐT
+            if(localStorage.getItem('transparentMode') === 'true') {
+                document.body.classList.add('transparent-ui');
+                document.getElementById('transparentToggle').checked = true;
+            }
+
             const savedBg = localStorage.getItem('modern_bg');
             if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
 
@@ -490,6 +526,18 @@
             if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); 
             localStorage.setItem('darkMode', d); 
         }
+
+        // HÀM BẬT/TẮT TRONG SUỐT
+        function toggleTransparent() {
+            const isTransparent = document.getElementById('transparentToggle').checked;
+            if (isTransparent) {
+                document.body.classList.add('transparent-ui');
+            } else {
+                document.body.classList.remove('transparent-ui');
+            }
+            localStorage.setItem('transparentMode', isTransparent);
+        }
+
         function changeBg(e) {
             const file = e.target.files[0];
             if(file){
