@@ -223,7 +223,6 @@
         .tag.warn { background: #fffbeb; color: var(--warning); }
         .tag.err { background: #fef2f2; color: var(--danger); }
 
-        /* SETTINGS */
         .setting-section { margin-bottom: 30px; }
         .setting-title { font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
@@ -390,7 +389,7 @@
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.display_name">Tên hiển thị:</label>
-                        <input type="text" id="nameInput" class="input-modern" placeholder="Name">
+                        <input type="text" id="nameInput" class="input-modern" placeholder="Nhập tên của bạn">
                     </div>
                     <button class="btn btn-primary" onclick="saveProfile()" data-i18n="btn.save">Lưu thay đổi</button>
                     <button class="btn btn-danger" onclick="logout()" data-i18n="btn.logout">Đăng xuất</button>
@@ -440,11 +439,12 @@
     </main>
 
     <script>
-        // --- 1. BIẾN TOÀN CỤC ---
+        // --- 1. BIẾN TOÀN CỤC (ĐƯA LÊN ĐẦU ĐỂ TRÁNH LỖI REFERENCE) ---
         let lastLevel = 0;
         let lastPump = false;
         let lastSiren = false;
         let historyData = [20, 20, 20, 20, 20];
+        let client = null; // Khai báo client ở đây
 
         // --- 2. HỆ THỐNG NGÔN NGỮ ---
         const translations = {
@@ -489,9 +489,6 @@
             updateDashboardText();
         }
         
-        // Initial translation
-        changeLanguage(currentLang);
-
         // --- 3. CLOCK & DATE ---
         function updateTime() {
             const now = new Date();
@@ -500,39 +497,8 @@
             const dateStr = now.toLocaleDateString(currentLang === 'vi' ? 'vi-VN' : 'en-US', options);
             document.getElementById('dateDisplay').innerText = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
         }
-        setInterval(updateTime, 1000); updateTime();
-
-        // --- 4. MQTT SETUP ---
-        const mqttHost = "broker.hivemq.com"; const mqttPort = 8884; 
-        const mqttTopic = "shadowfox/system_data"; const mqttTopicCmd = "shadowfox/commands";
-        let client;
-
-        function connectMQTT() {
-            const clientId = "client-" + Math.random().toString(16).substr(2, 8);
-            client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
-            client.onConnectionLost = onConnectionLost;
-            client.onMessageArrived = onMessageArrived;
-            client.connect({ onSuccess: onConnect, onFailure: onFailure, useSSL: true });
-        }
-        function onConnect() {
-            document.getElementById('mqttStatus').className = 'iot-status connected';
-            document.getElementById('mqttText').innerText = translations[currentLang]["iot.connected"];
-            client.subscribe(mqttTopic);
-        }
-        function onFailure(e) { console.log(e); setTimeout(connectMQTT, 5000); }
-        function onConnectionLost(e) { if(e.errorCode!==0) setTimeout(connectMQTT, 5000); }
-        function onMessageArrived(msg) {
-            try { const data = JSON.parse(msg.payloadString); updateDashboard(data.waterLevel, data.isPumpOn, data.isSirenOn); } catch(e){}
-        }
-        function sendCommand(cmd, val) {
-            if(client && client.isConnected()) {
-                const msg = new Paho.MQTT.Message(JSON.stringify({ device: cmd, state: val }));
-                msg.destinationName = mqttTopicCmd; client.send(msg);
-            }
-        }
-        connectMQTT();
-
-        // --- 5. UI LOGIC ---
+        
+        // --- 4. UI LOGIC & CHARTS ---
         let currentUser = localStorage.getItem('currentUser') || "Judy Hopps";
         let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png";
         updateProfileUI(currentUser, currentAvatar);
@@ -618,11 +584,73 @@
         let tempAvatar=currentAvatar; function selectAvatar(u,e){tempAvatar=u;document.querySelectorAll('.avatar-item').forEach(i=>i.classList.remove('selected'));e.classList.add('selected');document.getElementById('previewAvatar').src=u;}
         function saveProfile(){const n=document.getElementById('nameInput').value; if(n.trim()){currentUser=n;currentAvatar=tempAvatar;localStorage.setItem('currentUser',n);localStorage.setItem('currentAvatar',tempAvatar);updateProfileUI(n,tempAvatar);alert("Saved!");}}
         function logout(){if(confirm("Logout?")){localStorage.removeItem('currentUser');window.location.href='index.html';}}
-        function changeBg(e){const f=e.target.files[0];if(f){const r=new FileReader();r.onload=(v)=>{const d=v.target.result;document.body.style.backgroundImage=`url('${d}')`;try{localStorage.setItem('modern_bg',d);alert("Updated!");}catch(x){}};r.readAsDataURL(f);}}
-        function resetBg(){localStorage.removeItem('modern_bg');document.body.style.backgroundImage="url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')";}
+        
+        // Background & Theme Settings
+        function changeBg(e) {
+            const file = e.target.files[0];
+            if(file){
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const bgData = evt.target.result;
+                    document.body.style.backgroundImage = `url('${bgData}')`;
+                    try{
+                        localStorage.setItem('modern_bg', bgData);
+                        alert("Đã cập nhật hình nền!");
+                        const uploadZone = document.querySelector('.upload-zone');
+                        uploadZone.innerHTML = `<i class='bx bx-check-circle' style="font-size: 40px; color: var(--success);"></i><div style="margin-top: 10px; font-weight: 600; color: var(--success);">Đã tải ảnh lên!</div>`;
+                        uploadZone.style.borderColor = 'var(--success)';
+                        uploadZone.style.background = '#ecfdf5';
+                    } catch(e){
+                        alert("Bộ nhớ đầy, ảnh chỉ hiện tạm thời.");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function resetBg() {
+            localStorage.removeItem('modern_bg');
+            document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')";
+            const uploadZone = document.querySelector('.upload-zone');
+            uploadZone.innerHTML = `<i class='bx bx-cloud-upload' style="font-size: 40px; color: var(--primary);"></i><div style="margin-top: 10px; font-weight: 600;">Nhấn để tải ảnh lên</div>`;
+            uploadZone.style.borderColor = '#cbd5e1';
+            uploadZone.style.background = 'var(--bg-card)';
+            alert("Đã khôi phục mặc định!");
+        }
         function toggleDarkMode(){const d=document.getElementById('darkModeToggle').checked; if(d)document.body.classList.add('dark-mode');else document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode',d); lineChart.updateOptions({theme:{mode:d?'dark':'light'}});}
         function saveSetting(k,v){localStorage.setItem(k,v);}
+
+        // --- 5. MQTT SETUP (CHẠY SAU CÙNG) ---
+        const mqttHost = "broker.hivemq.com"; const mqttPort = 8884; 
+        const mqttTopic = "shadowfox/system_data"; const mqttTopicCmd = "shadowfox/commands";
+
+        function connectMQTT() {
+            const clientId = "client-" + Math.random().toString(16).substr(2, 8);
+            client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+            client.connect({ onSuccess: onConnect, onFailure: onFailure, useSSL: true });
+        }
+        function onConnect() {
+            document.getElementById('mqttStatus').className = 'iot-status connected';
+            document.getElementById('mqttText').innerText = translations[currentLang]["iot.connected"];
+            client.subscribe(mqttTopic);
+        }
+        function onFailure(e) { console.log(e); setTimeout(connectMQTT, 5000); }
+        function onConnectionLost(e) { if(e.errorCode!==0) setTimeout(connectMQTT, 5000); }
+        function onMessageArrived(msg) {
+            try { const data = JSON.parse(msg.payloadString); updateDashboard(data.waterLevel, data.isPumpOn, data.isSirenOn); } catch(e){}
+        }
+        function sendCommand(cmd, val) {
+            if(client && client.isConnected()) {
+                const msg = new Paho.MQTT.Message(JSON.stringify({ device: cmd, state: val }));
+                msg.destinationName = mqttTopicCmd; client.send(msg);
+            }
+        }
         
+        // START
+        changeLanguage(currentLang); // Dịch lần đầu
+        setInterval(updateTime, 1000); updateTime(); // Chạy đồng hồ
+        connectMQTT(); // Kết nối IoT
         addLog("System", "Init", "ok");
     </script>
 </body>
