@@ -9,7 +9,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <!-- THƯ VIỆN KẾT NỐI IOT (MQTT) -->
+    <!-- THƯ VIỆN MQTT -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
     <style>
@@ -29,7 +29,27 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        /* DARK MODE */
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-light: #94a3b8;
+            --primary-light: #312e81;
+            --secondary: #94a3b8;
+        }
+        body.dark-mode .sidebar, body.dark-mode .content-container {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(255,255,255,0.1);
+        }
+        body.dark-mode .menu-item:hover { background: #334155; }
+        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td {
+            border-color: #334155;
+        }
+        body.dark-mode .upload-zone { background: #1e293b; border-color: #475569; }
+        body.dark-mode .pump-card:hover { background: #334155; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
         
         body { 
             background-color: var(--bg-body); 
@@ -52,9 +72,8 @@
         
         .logo-box {
             padding: 25px 20px; display: flex; align-items: center; gap: 12px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--primary-light);
         }
-        
         .logo-img { width: 45px; height: auto; max-height: 45px; object-fit: contain; }
         .logo-text h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
         .logo-text span { font-size: 12px; color: var(--text-light); }
@@ -77,7 +96,7 @@
             display: flex; align-items: center; gap: 12px; cursor: pointer;
             transition: 0.2s;
         }
-        .user-footer:hover { background: #f8fafc; border-radius: 0 0 var(--radius) var(--radius); }
+        .user-footer:hover { background: var(--primary-light); border-radius: 0 0 var(--radius) var(--radius); }
         .user-avatar { 
             width: 40px; height: 40px; border-radius: 10px; object-fit: contain;
             background: #f1f5f9; padding: 2px;
@@ -86,6 +105,7 @@
 
         /* --- MAIN CONTENT --- */
         .main { flex: 1; padding: 2vh 2vh 2vh 0; overflow-y: auto; height: 100vh; }
+        
         .content-container {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(15px);
@@ -110,7 +130,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        /* IOT STATUS BAR */
+        /* IOT STATUS */
         .iot-status {
             font-size: 12px; padding: 5px 10px; border-radius: 20px; background: #eee; color: #666;
             display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
@@ -119,13 +139,15 @@
         .iot-dot { width: 8px; height: 8px; background: #ccc; border-radius: 50%; }
         .iot-status.connected .iot-dot { background: #10b981; box-shadow: 0 0 5px #10b981; }
 
-        /* TABS & GRID */
+        /* TABS */
         .tab-content { display: none; animation: fadeIn 0.4s ease; flex: 1; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* GRID LAYOUTS */
         .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
 
-        /* CARDS & WIDGETS */
+        /* CARDS */
         .card {
             background: var(--bg-card); border-radius: 16px; padding: 24px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
@@ -135,6 +157,7 @@
         .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .card-title i { color: var(--primary); font-size: 20px; }
 
+        /* WIDGETS */
         .camera-container {
             width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;
             overflow: hidden; position: relative;
@@ -174,10 +197,10 @@
             width: 70px; height: 70px; border-radius: 50%; padding: 10px; border: 3px solid #e2e8f0;
             cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; background: #fff;
         }
-        .avatar-item img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        .avatar-item img { width: 100%; height: 100%; object-fit: contain; }
         .avatar-item:hover, .avatar-item.selected { border-color: var(--primary); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        .input-modern { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; margin-top: 10px; outline: none; transition: 0.2s; }
+        .input-modern { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; margin-top: 10px; outline: none; transition: 0.2s; background: var(--bg-card); color: var(--text-main); }
         .input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
 
         .btn { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
@@ -186,8 +209,11 @@
         .btn-danger { background: #fee2e2; color: var(--danger); width: 100%; margin-top: 10px; }
         .btn-danger:hover { background: #fecaca; }
 
-        .upload-zone { display: block; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; color: var(--secondary); transition: 0.3s; background: #ffffff; }
-        .upload-zone:hover { border-color: var(--primary); background: #f8fafc; }
+        .upload-zone { 
+            display: block; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align: center; 
+            cursor: pointer; color: var(--secondary); transition: 0.3s; background: var(--bg-card); 
+        }
+        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
 
         .modern-table { width: 100%; border-collapse: collapse; }
         .modern-table th { text-align: left; padding: 16px; color: var(--text-light); font-weight: 600; border-bottom: 1px solid #e2e8f0; font-size: 13px; text-transform: uppercase; }
@@ -196,6 +222,21 @@
         .tag.ok { background: #ecfdf5; color: var(--success); }
         .tag.warn { background: #fffbeb; color: var(--warning); }
         .tag.err { background: #fef2f2; color: var(--danger); }
+
+        /* SETTINGS */
+        .setting-section { margin-bottom: 30px; }
+        .setting-title { font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+        .setting-info h4 { font-size: 15px; font-weight: 600; margin: 0 0 5px 0; color: var(--text-main); }
+        .setting-info p { font-size: 13px; color: var(--text-light); margin: 0; }
+        
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .form-select { padding: 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; color: var(--text-main); font-family: 'Inter'; font-size: 14px; background-color: var(--bg-card); cursor: pointer; }
 
         @media (max-width: 1024px) {
             .sidebar { width: 80px; } .logo-text, .menu-item span, .user-footer div { display: none; }
@@ -223,11 +264,21 @@
         </div>
 
         <ul class="menu">
-            <li class="menu-item active" onclick="switchTab('home', this)"><i class='bx bx-grid-alt'></i> <span>Tổng quan</span></li>
-            <li class="menu-item" onclick="switchTab('camera', this)"><i class='bx bx-cctv'></i> <span>Camera</span></li>
-            <li class="menu-item" onclick="switchTab('logs', this)"><i class='bx bx-list-ul'></i> <span>Nhật ký</span></li>
-            <li class="menu-item" onclick="switchTab('account', this)"><i class='bx bx-user'></i> <span>Tài khoản</span></li>
-            <li class="menu-item" onclick="switchTab('settings', this)"><i class='bx bx-cog'></i> <span>Cài đặt</span></li>
+            <li class="menu-item active" onclick="switchTab('home', this)">
+                <i class='bx bx-grid-alt'></i> <span data-i18n="menu.home">Tổng quan</span>
+            </li>
+            <li class="menu-item" onclick="switchTab('camera', this)">
+                <i class='bx bx-cctv'></i> <span data-i18n="menu.camera">Camera</span>
+            </li>
+            <li class="menu-item" onclick="switchTab('logs', this)">
+                <i class='bx bx-list-ul'></i> <span data-i18n="menu.logs">Nhật ký</span>
+            </li>
+            <li class="menu-item" onclick="switchTab('account', this)">
+                <i class='bx bx-user'></i> <span data-i18n="menu.account">Tài khoản</span>
+            </li>
+            <li class="menu-item" onclick="switchTab('settings', this)">
+                <i class='bx bx-cog'></i> <span data-i18n="menu.settings">Cài đặt</span>
+            </li>
         </ul>
 
         <div class="user-footer" onclick="switchTab('account', null)">
@@ -246,10 +297,10 @@
             <!-- HEADER -->
             <div class="top-header">
                 <div class="greeting">
-                    <h2>Xin chào, <span id="headerName" style="color: var(--primary);">Judy</span>! 👋</h2>
+                    <h2><span data-i18n="header.hello">Xin chào</span>, <span id="headerName" style="color: var(--primary);">Judy</span>! 👋</h2>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <p class="date-display" id="dateDisplay">Đang tải...</p>
-                        <div class="iot-status" id="mqttStatus"><div class="iot-dot"></div> <span id="mqttText">Ngắt kết nối</span></div>
+                        <p class="date-display" id="dateDisplay">...</p>
+                        <div class="iot-status" id="mqttStatus"><div class="iot-dot"></div> <span id="mqttText" data-i18n="iot.disconnected">Ngắt kết nối</span></div>
                     </div>
                 </div>
                 <div class="clock-display" id="clockDisplay">00:00:00</div>
@@ -262,44 +313,32 @@
                         <div class="card" style="padding: 0; border: none; overflow: hidden;">
                             <div class="camera-container">
                                 <div class="live-badge">● LIVE</div>
-                                <!-- THAY IP CAMERA CỦA BẠN VÀO ĐÂY (Ví dụ: http://192.168.1.10/stream) -->
+                                <!-- THAY IP CAMERA CỦA BẠN VÀO ĐÂY -->
                                 <img id="camStream1" src="https://images.unsplash.com/photo-1518386377785-132b4b443213?q=80&w=2670&auto=format&fit=crop">
                             </div>
                         </div>
                         
                         <div class="card">
-                            <div class="card-header">
-                                <span class="card-title"><i class='bx bx-line-chart'></i> Biểu đồ mực nước</span>
-                            </div>
+                            <div class="card-header"><span class="card-title"><i class='bx bx-line-chart'></i> <span data-i18n="chart.title">Biểu đồ mực nước</span></span></div>
                             <div id="lineChart" style="min-height: 250px;"></div>
                         </div>
                     </div>
-
                     <div class="right-col">
                         <div class="card" style="text-align: center;">
-                            <div class="card-title" style="justify-content: center; margin-bottom: 5px;">Mực nước hiện tại</div>
+                            <div class="card-title" style="justify-content: center; margin-bottom: 5px;" data-i18n="gauge.title">Mực nước hiện tại</div>
                             <div id="gaugeChart" style="margin-top: -15px;"></div>
                             <div class="stat-value" id="waterLevelText" style="color: var(--primary);">0%</div>
-                            <div id="statusAlert" class="alert-box">
-                                <i class='bx bx-loader-alt bx-spin'></i> Đang đợi dữ liệu...
-                            </div>
+                            <div id="statusAlert" class="alert-box"><i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span></div>
                         </div>
-
                         <div class="card">
-                            <div class="card-title">Điều khiển</div>
-                            
+                            <div class="card-title" data-i18n="controls.title">Điều khiển</div>
                             <div id="btnPump" class="pump-card" onclick="togglePump()">
                                 <div class="pump-icon"><i class='bx bx-water'></i></div>
-                                <div>
-                                    <div style="font-weight: 600;">Máy Bơm</div>
-                                    <div style="font-size: 12px; color: var(--text-light);" id="pumpText">Đang Tắt</div>
-                                </div>
+                                <div><div style="font-weight: 600;" data-i18n="pump.name">Máy Bơm</div><div style="font-size: 12px; color: var(--text-light);" id="pumpText">OFF</div></div>
                             </div>
-
                             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
                                 <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--secondary);">
-                                    <span>Trạng thái Còi hú:</span>
-                                    <span style="font-weight: 600;" id="sirenText">--</span>
+                                    <span data-i18n="siren.label">Trạng thái Còi hú:</span><span style="font-weight: 600;" id="sirenText">--</span>
                                 </div>
                             </div>
                         </div>
@@ -307,7 +346,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: CAMERA FULL -->
+            <!-- OTHER TABS -->
             <div id="tab-camera" class="tab-content">
                 <div class="card" style="height: 75vh; padding: 0; overflow: hidden; background: #000;">
                     <div class="camera-container" style="height: 100%; border-radius: 0;">
@@ -316,31 +355,30 @@
                 </div>
             </div>
 
-            <!-- TAB 3: LOGS -->
             <div id="tab-logs" class="tab-content">
                 <div class="card">
-                    <div class="card-header">
-                        <span class="card-title"><i class='bx bx-history'></i> Nhật ký hoạt động</span>
-                        <button class="btn" style="border: 1px solid #e2e8f0; padding: 8px 16px;">Xuất CSV</button>
-                    </div>
+                    <div class="card-header"><span class="card-title"><i class='bx bx-history'></i> <span data-i18n="logs.title">Nhật ký hoạt động</span></span>
+                    <button class="btn" style="border: 1px solid #e2e8f0; padding: 8px 16px;">Export CSV</button></div>
                     <table class="modern-table">
-                        <thead><tr><th>Thời gian</th><th>Sự kiện</th><th>Chi tiết</th><th>Trạng thái</th></tr></thead>
-                        <tbody id="logBody"></tbody>
+                        <thead><tr>
+                            <th data-i18n="table.time">Thời gian</th>
+                            <th data-i18n="table.event">Sự kiện</th>
+                            <th data-i18n="table.detail">Chi tiết</th>
+                            <th data-i18n="table.status">Trạng thái</th>
+                        </tr></thead><tbody id="logBody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- TAB 4: ACCOUNT -->
             <div id="tab-account" class="tab-content">
                 <div class="card" style="max-width: 500px; margin: 0 auto;">
-                    <div class="card-header"><span class="card-title"><i class='bx bx-id-card'></i> Thông tin tài khoản</span></div>
+                    <div class="card-header"><span class="card-title"><i class='bx bx-id-card'></i> <span data-i18n="account.title">Thông tin tài khoản</span></span></div>
                     <div style="text-align: center; margin-bottom: 20px;">
                         <img id="previewAvatar" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: contain; border: 4px solid var(--primary-light); background: #f8fafc; padding: 10px;">
                         <h2 style="margin-top: 10px;" id="previewName">Judy Hopps</h2>
-                        <span style="color: var(--text-light); font-size: 14px;">Administrator</span>
                     </div>
                     <div style="margin-bottom: 20px;">
-                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);">Chọn nhân vật đại diện:</label>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.choose_avatar">Chọn nhân vật đại diện:</label>
                         <div class="avatar-grid">
                             <div class="avatar-item selected" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616408.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png"></div>
                             <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616432.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616432.png"></div>
@@ -351,118 +389,157 @@
                         </div>
                     </div>
                     <div style="margin-bottom: 20px;">
-                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);">Tên hiển thị:</label>
-                        <input type="text" id="nameInput" class="input-modern" placeholder="Nhập tên của bạn">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.display_name">Tên hiển thị:</label>
+                        <input type="text" id="nameInput" class="input-modern" placeholder="Name">
                     </div>
-                    <button class="btn btn-primary" onclick="saveProfile()">Lưu thay đổi</button>
-                    <button class="btn btn-danger" onclick="logout()">Đăng xuất</button>
+                    <button class="btn btn-primary" onclick="saveProfile()" data-i18n="btn.save">Lưu thay đổi</button>
+                    <button class="btn btn-danger" onclick="logout()" data-i18n="btn.logout">Đăng xuất</button>
                 </div>
             </div>
 
-            <!-- TAB 5: SETTINGS -->
+            <!-- SETTINGS TAB -->
             <div id="tab-settings" class="tab-content">
-                <div class="card" style="max-width: 600px; margin: 0 auto;">
-                    <div class="card-header"><span class="card-title"><i class='bx bx-image'></i> Hình nền giao diện</span></div>
-                    <input type="file" id="bgUpload" hidden onchange="changeBg(event)">
-                    <label for="bgUpload" class="upload-zone">
-                        <i class='bx bx-cloud-upload' style="font-size: 40px; color: var(--primary);"></i>
-                        <div style="margin-top: 10px; font-weight: 600;">Nhấn để tải ảnh lên</div>
-                        <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Hỗ trợ JPG, PNG (Max 5MB)</div>
-                    </label>
-                    <button class="btn" style="width: 100%; margin-top: 20px; background: #f1f5f9; color: var(--secondary);" onclick="resetBg()">Khôi phục mặc định</button>
+                <div class="card" style="max-width: 650px; margin: 0 auto;">
+                    <div class="card-header"><span class="card-title"><i class='bx bx-cog'></i> <span data-i18n="settings.title">Cài đặt hệ thống</span></span></div>
+                    
+                    <div class="setting-section">
+                        <div class="setting-title" data-i18n="settings.interface">Giao diện</div>
+                        <div class="setting-row">
+                            <div class="setting-info"><h4 data-i18n="settings.language">Ngôn ngữ</h4><p data-i18n="settings.language_desc">Chọn ngôn ngữ hiển thị.</p></div>
+                            <select class="form-select" id="langSelect" onchange="changeLanguage(this.value)">
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <div class="setting-info"><h4 data-i18n="settings.dark_mode">Chế độ Tối (Dark Mode)</h4><p data-i18n="settings.dark_mode_desc">Giao diện tối bảo vệ mắt.</p></div>
+                            <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
+                        </div>
+                        <div class="setting-row" style="display: block;">
+                            <div class="setting-info" style="margin-bottom: 10px;"><h4 data-i18n="settings.wallpaper">Hình nền Dashboard</h4><p data-i18n="settings.wallpaper_desc">Tải ảnh từ máy tính (Max 5MB).</p></div>
+                            <input type="file" id="bgUpload" hidden onchange="changeBg(event)">
+                            <label for="bgUpload" class="upload-zone">
+                                <i class='bx bx-cloud-upload' style="font-size: 40px; color: var(--primary);"></i>
+                                <div style="margin-top: 10px; font-weight: 600;" data-i18n="upload.click">Nhấn để tải ảnh lên</div>
+                            </label>
+                            <button class="btn" style="width: 100%; margin-top: 10px; background: #f1f5f9; color: var(--secondary);" onclick="resetBg()" data-i18n="btn.default">Về mặc định</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <div class="setting-title" data-i18n="settings.notification">Thông báo</div>
+                        <div class="setting-row">
+                            <div class="setting-info"><h4 data-i18n="settings.sound">Cảnh báo âm thanh</h4><p data-i18n="settings.sound_desc">Phát tiếng khi có sự cố.</p></div>
+                            <label class="switch"><input type="checkbox" onchange="saveSetting('sound', this.checked)"><span class="slider"></span></label>
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </div>
     </main>
 
     <script>
-        // 1. CLOCK & DATE
+        // --- 1. BIẾN TOÀN CỤC ---
+        let lastLevel = 0;
+        let lastPump = false;
+        let lastSiren = false;
+        let historyData = [20, 20, 20, 20, 20];
+
+        // --- 2. HỆ THỐNG NGÔN NGỮ ---
+        const translations = {
+            vi: {
+                "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt",
+                "header.hello": "Xin chào", "iot.connected": "Đã kết nối IoT", "iot.disconnected": "Ngắt kết nối",
+                "chart.title": "Biểu đồ mực nước", "gauge.title": "Mực nước hiện tại", "status.waiting": "Đang đợi dữ liệu...", "status.safe": "Hệ thống an toàn", "status.danger": "CẢNH BÁO NGẬP!",
+                "controls.title": "Điều khiển", "pump.name": "Máy Bơm", "pump.on": "Đang Hoạt Động", "pump.off": "Đang Tắt", "siren.label": "Trạng thái Còi hú:", "siren.on": "ĐANG HÚ CÒI", "siren.off": "Im lặng",
+                "logs.title": "Nhật ký hoạt động", "table.time": "Thời gian", "table.event": "Sự kiện", "table.detail": "Chi tiết", "table.status": "Trạng thái",
+                "account.title": "Thông tin tài khoản", "account.choose_avatar": "Chọn nhân vật đại diện:", "account.display_name": "Tên hiển thị:",
+                "settings.title": "Cài đặt hệ thống", "settings.interface": "Giao diện", "settings.language": "Ngôn ngữ", "settings.language_desc": "Chọn ngôn ngữ hiển thị.",
+                "settings.dark_mode": "Chế độ Tối", "settings.dark_mode_desc": "Chuyển sang giao diện tối.", "settings.wallpaper": "Hình nền", "settings.wallpaper_desc": "Tải ảnh từ máy tính (Max 5MB).",
+                "settings.notification": "Thông báo", "settings.sound": "Cảnh báo âm thanh", "settings.sound_desc": "Phát tiếng khi có sự cố.",
+                "btn.save": "Lưu thay đổi", "btn.logout": "Đăng xuất", "btn.default": "Về mặc định", "upload.click": "Nhấn để tải ảnh lên", "upload.done": "Đã tải ảnh lên!"
+            },
+            en: {
+                "menu.home": "Overview", "menu.camera": "Camera", "menu.logs": "Logs", "menu.account": "Account", "menu.settings": "Settings",
+                "header.hello": "Hello", "iot.connected": "IoT Connected", "iot.disconnected": "Disconnected",
+                "chart.title": "Water Level Chart", "gauge.title": "Current Level", "status.waiting": "Waiting for data...", "status.safe": "System Safe", "status.danger": "FLOOD ALERT!",
+                "controls.title": "Controls", "pump.name": "Water Pump", "pump.on": "Running", "pump.off": "Stopped", "siren.label": "Siren Status:", "siren.on": "SIREN ON", "siren.off": "Silent",
+                "logs.title": "Activity Logs", "table.time": "Time", "table.event": "Event", "table.detail": "Detail", "table.status": "Status",
+                "account.title": "Account Info", "account.choose_avatar": "Choose Avatar:", "account.display_name": "Display Name:",
+                "settings.title": "System Settings", "settings.interface": "Interface", "settings.language": "Language", "settings.language_desc": "Select display language.",
+                "settings.dark_mode": "Dark Mode", "settings.dark_mode_desc": "Switch to dark theme.", "settings.wallpaper": "Wallpaper", "settings.wallpaper_desc": "Upload image (Max 5MB).",
+                "settings.notification": "Notifications", "settings.sound": "Sound Alert", "settings.sound_desc": "Play sound on alert.",
+                "btn.save": "Save Changes", "btn.logout": "Logout", "btn.default": "Reset Default", "upload.click": "Click to upload", "upload.done": "Image Uploaded!"
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'vi';
+        document.getElementById('langSelect').value = currentLang;
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerText = translations[lang][key];
+            });
+            // Update dynamic text immediately
+            updateDashboardText();
+        }
+        
+        // Initial translation
+        changeLanguage(currentLang);
+
+        // --- 3. CLOCK & DATE ---
         function updateTime() {
             const now = new Date();
-            document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('vi-VN', {hour12: false});
+            document.getElementById('clockDisplay').innerText = now.toLocaleTimeString(currentLang === 'vi' ? 'vi-VN' : 'en-US', {hour12: false});
             const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-            const dateStr = now.toLocaleDateString('vi-VN', options);
+            const dateStr = now.toLocaleDateString(currentLang === 'vi' ? 'vi-VN' : 'en-US', options);
             document.getElementById('dateDisplay').innerText = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
         }
         setInterval(updateTime, 1000); updateTime();
 
-        // 2. MQTT SETUP (FIXED SSL)
-        const mqttHost = "broker.hivemq.com"; 
-        const mqttPort = 8884; // SSL Port
-        const mqttTopic = "shadowfox/system_data";
-        const mqttTopicCmd = "shadowfox/commands";
+        // --- 4. MQTT SETUP ---
+        const mqttHost = "broker.hivemq.com"; const mqttPort = 8884; 
+        const mqttTopic = "shadowfox/system_data"; const mqttTopicCmd = "shadowfox/commands";
         let client;
 
         function connectMQTT() {
             const clientId = "client-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
-
             client.onConnectionLost = onConnectionLost;
             client.onMessageArrived = onMessageArrived;
-
-            client.connect({
-                onSuccess: onConnect,
-                onFailure: onFailure,
-                useSSL: true // Bật SSL để chạy trên HTTPS
-            });
+            client.connect({ onSuccess: onConnect, onFailure: onFailure, useSSL: true });
         }
-
         function onConnect() {
-            console.log("MQTT Connected!");
             document.getElementById('mqttStatus').className = 'iot-status connected';
-            document.getElementById('mqttText').innerText = "Đã kết nối IoT";
-            
+            document.getElementById('mqttText').innerText = translations[currentLang]["iot.connected"];
             client.subscribe(mqttTopic);
-            addLog("Hệ thống", "Đã kết nối Server IoT", "ok");
         }
-
-        function onFailure(responseObject) {
-            console.log("MQTT Fail: " + responseObject.errorMessage);
-            document.getElementById('mqttStatus').className = 'iot-status';
-            document.getElementById('mqttText').innerText = "Mất kết nối";
-            setTimeout(connectMQTT, 5000); 
+        function onFailure(e) { console.log(e); setTimeout(connectMQTT, 5000); }
+        function onConnectionLost(e) { if(e.errorCode!==0) setTimeout(connectMQTT, 5000); }
+        function onMessageArrived(msg) {
+            try { const data = JSON.parse(msg.payloadString); updateDashboard(data.waterLevel, data.isPumpOn, data.isSirenOn); } catch(e){}
         }
-
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log("MQTT Lost: " + responseObject.errorMessage);
-                document.getElementById('mqttStatus').className = 'iot-status';
-                document.getElementById('mqttText').innerText = "Đang kết nối lại...";
-                setTimeout(connectMQTT, 5000);
+        function sendCommand(cmd, val) {
+            if(client && client.isConnected()) {
+                const msg = new Paho.MQTT.Message(JSON.stringify({ device: cmd, state: val }));
+                msg.destinationName = mqttTopicCmd; client.send(msg);
             }
         }
-
-        function onMessageArrived(message) {
-            console.log("Data: " + message.payloadString);
-            try {
-                const data = JSON.parse(message.payloadString);
-                updateDashboard(data.waterLevel, data.isPumpOn, data.isSirenOn);
-            } catch (e) {
-                console.error("Lỗi phân tích JSON", e);
-            }
-        }
-
-        function sendCommand(cmd, value) {
-            if (client && client.isConnected()) {
-                const payload = JSON.stringify({ device: cmd, state: value });
-                const message = new Paho.MQTT.Message(payload);
-                message.destinationName = mqttTopicCmd;
-                client.send(message);
-                console.log("Sent: " + payload);
-            } else {
-                alert("Chưa kết nối thiết bị!");
-            }
-        }
-
         connectMQTT();
 
-
-        // 3. UI LOGIC & CHARTS
+        // --- 5. UI LOGIC ---
         let currentUser = localStorage.getItem('currentUser') || "Judy Hopps";
         let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png";
         updateProfileUI(currentUser, currentAvatar);
         const savedBg = localStorage.getItem('modern_bg');
         if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if(isDark) { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
 
         function updateProfileUI(name, avatar) {
             document.getElementById('sidebarName').innerText = name;
@@ -473,96 +550,80 @@
             document.getElementById('nameInput').value = name;
         }
 
+        // Charts
         var chartOptions = {
-            series: [{ name: 'Mức nước', data: [] }],
-            chart: { type: 'area', height: 250, toolbar: { show: false }, fontFamily: 'Inter', animations: { enabled: false } },
+            series: [{ name: 'Water', data: [] }],
+            chart: { type: 'area', height: 250, toolbar: { show: false }, fontFamily: 'Inter', animations: { enabled: false }, background: 'transparent' },
             colors: ['#4f46e5'], stroke: { curve: 'smooth', width: 2 },
             fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
-            dataLabels: { enabled: false }, xaxis: { labels: { show: false } }, yaxis: { max: 100, min: 0 }
+            dataLabels: { enabled: false }, xaxis: { labels: { show: false } }, yaxis: { max: 100, min: 0 },
+            theme: { mode: isDark ? 'dark' : 'light' }
         };
         var lineChart = new ApexCharts(document.querySelector("#lineChart"), chartOptions);
         lineChart.render();
 
         var gaugeOptions = {
             series: [0], chart: { height: 250, type: 'radialBar', fontFamily: 'Inter' },
-            plotOptions: { radialBar: { hollow: { size: '60%' }, track: { background: '#f1f5f9' }, dataLabels: { show: false } } },
+            plotOptions: { radialBar: { hollow: { size: '60%' }, track: { background: isDark ? '#334155' : '#f1f5f9' }, dataLabels: { show: false } } },
             colors: ['#4f46e5'], stroke: { lineCap: 'round' }
         };
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), gaugeOptions);
         gaugeChart.render();
 
-        // 4. UPDATE UI FUNCTION
-        let historyData = [20, 20, 20, 20, 20]; 
-
+        // Update UI Function
         function updateDashboard(level, pumpStatus, sirenStatus) {
-            document.getElementById('waterLevelText').innerText = level + "%";
-            gaugeChart.updateSeries([level]);
+            lastLevel = level; lastPump = pumpStatus; lastSiren = sirenStatus;
+            updateDashboardText();
             
-            historyData.push(level);
-            if(historyData.length > 20) historyData.shift();
+            gaugeChart.updateSeries([level]);
+            historyData.push(level); if(historyData.length>20) historyData.shift();
             lineChart.updateSeries([{ data: historyData }]);
+            
+            if (level > 80) gaugeChart.updateOptions({ colors: ['#ef4444'] });
+            else gaugeChart.updateOptions({ colors: ['#4f46e5'] });
 
+            const pumpCard = document.getElementById('btnPump');
+            if (pumpStatus) pumpCard.classList.add('active'); 
+            else pumpCard.classList.remove('active');
+        }
+
+        function updateDashboardText() {
+            const t = translations[currentLang];
+            document.getElementById('waterLevelText').innerText = lastLevel + "%";
+            document.getElementById('mqttText').innerText = client && client.isConnected() ? t["iot.connected"] : t["iot.disconnected"];
+            
             const alertBox = document.getElementById('statusAlert');
             const sirenTxt = document.getElementById('sirenText');
             
-            if (level > 80) {
-                alertBox.className = "alert-box danger";
-                alertBox.innerHTML = "<i class='bx bx-error-circle'></i> CẢNH BÁO NGẬP!";
-                gaugeChart.updateOptions({ colors: ['#ef4444'] });
-                if(sirenStatus) {
-                    sirenTxt.innerText = "ĐANG HÚ CÒI"; 
-                    sirenTxt.style.color = "#ef4444";
-                }
+            if (lastLevel > 80) {
+                alertBox.className = "alert-box danger"; alertBox.innerHTML = "<i class='bx bx-error-circle'></i> " + t["status.danger"];
+                if(lastSiren) { sirenTxt.innerText = t["siren.on"]; sirenTxt.style.color = "#ef4444"; }
             } else {
-                alertBox.className = "alert-box";
-                alertBox.innerHTML = "<i class='bx bx-check-circle'></i> Hệ thống an toàn";
-                sirenTxt.innerText = "Im lặng"; 
-                sirenTxt.style.color = "#64748b";
-                gaugeChart.updateOptions({ colors: ['#4f46e5'] });
+                alertBox.className = "alert-box"; alertBox.innerHTML = "<i class='bx bx-check-circle'></i> " + t["status.safe"];
+                sirenTxt.innerText = t["siren.off"]; sirenTxt.style.color = "#64748b";
             }
 
-            const pumpCard = document.getElementById('btnPump');
-            const pumpText = document.getElementById('pumpText');
-            if (pumpStatus) {
-                pumpCard.classList.add('active');
-                pumpText.innerText = "Đang Hoạt Động";
-            } else {
-                pumpCard.classList.remove('active');
-                pumpText.innerText = "Đang Tắt";
-            }
+            document.getElementById('pumpText').innerText = lastPump ? t["pump.on"] : t["pump.off"];
         }
 
-        // 5. CONTROLS
         function togglePump() {
             const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
-            const newState = !isCurrentlyOn;
-            sendCommand("pump", newState);
-            addLog("Người dùng", newState ? "Bật máy bơm" : "Tắt máy bơm", "ok");
+            sendCommand("pump", !isCurrentlyOn);
+            addLog("User", !isCurrentlyOn ? "Pump ON" : "Pump OFF", "ok");
         }
 
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            if(el) {
-                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-                el.classList.add('active');
-            }
-        }
-        function addLog(source, detail, type) {
-            const tbody = document.getElementById('logBody');
-            const row = `<tr><td>${new Date().toLocaleTimeString()}</td><td>${source}</td><td>${detail}</td><td><span class="tag ${type}">${type==='ok'?'Info':(type==='err'?'Danger':'Warn')}</span></td></tr>`;
-            tbody.insertAdjacentHTML('afterbegin', row);
-            if(tbody.children.length > 8) tbody.removeChild(tbody.lastChild);
-        }
+        // ... Other functions ...
+        function switchTab(id, el) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); if(el){document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active');} }
+        function addLog(s,d,t){ const tb=document.getElementById('logBody'); const r=`<tr><td>${new Date().toLocaleTimeString()}</td><td>${s}</td><td>${d}</td><td><span class="tag ${t}">${t}</span></td></tr>`; tb.insertAdjacentHTML('afterbegin',r); }
+        let tempAvatar=currentAvatar; function selectAvatar(u,e){tempAvatar=u;document.querySelectorAll('.avatar-item').forEach(i=>i.classList.remove('selected'));e.classList.add('selected');document.getElementById('previewAvatar').src=u;}
+        function saveProfile(){const n=document.getElementById('nameInput').value; if(n.trim()){currentUser=n;currentAvatar=tempAvatar;localStorage.setItem('currentUser',n);localStorage.setItem('currentAvatar',tempAvatar);updateProfileUI(n,tempAvatar);alert("Saved!");}}
+        function logout(){if(confirm("Logout?")){localStorage.removeItem('currentUser');window.location.href='index.html';}}
+        function changeBg(e){const f=e.target.files[0];if(f){const r=new FileReader();r.onload=(v)=>{const d=v.target.result;document.body.style.backgroundImage=`url('${d}')`;try{localStorage.setItem('modern_bg',d);alert("Updated!");}catch(x){}};r.readAsDataURL(f);}}
+        function resetBg(){localStorage.removeItem('modern_bg');document.body.style.backgroundImage="url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')";}
+        function toggleDarkMode(){const d=document.getElementById('darkModeToggle').checked; if(d)document.body.classList.add('dark-mode');else document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode',d); lineChart.updateOptions({theme:{mode:d?'dark':'light'}});}
+        function saveSetting(k,v){localStorage.setItem(k,v);}
         
-        let tempAvatar = currentAvatar;
-        function selectAvatar(url, el) { tempAvatar = url; document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected')); el.classList.add('selected'); document.getElementById('previewAvatar').src = url; }
-        function saveProfile() { const name = document.getElementById('nameInput').value; if(!name.trim()) return alert("Lỗi tên!"); currentUser = name; currentAvatar = tempAvatar; localStorage.setItem('currentUser', currentUser); localStorage.setItem('currentAvatar', currentAvatar); updateProfileUI(currentUser, currentAvatar); alert("Đã lưu!"); }
-        function logout() { if(confirm("Đăng xuất?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
-        function changeBg(e) { const file = e.target.files[0]; if(file){ const reader = new FileReader(); reader.onload = (evt) => { document.body.style.backgroundImage = `url('${evt.target.result}')`; try{localStorage.setItem('modern_bg', evt.target.result);}catch(e){} }; reader.readAsDataURL(file); } }
-        function resetBg() { localStorage.removeItem('modern_bg'); document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')"; }
-
-        addLog("System", "Dashboard initialized", "ok");
+        addLog("System", "Init", "ok");
     </script>
 </body>
 </html>
