@@ -174,37 +174,63 @@
         async function handleFormSubmit(event) {
             event.preventDefault(); 
             
-            const u = document.getElementById('username').value;
-            const type = isLoginMode ? 'login' : 'register';
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const endpoint = isLoginMode ? '/login' : '/register';
+            
+            // Chuẩn bị dữ liệu gửi lên Server
+            const payload = isLoginMode ? { username, password } : { username, password, email };
 
             try {
                 const btn = document.getElementById('btn-action');
-                const originalText = btn.innerText;
                 btn.innerText = "Đang xử lý...";
                 btn.disabled = true;
 
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.disabled = false;
+                // GỌI API LÊN SERVER THẬT
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                btn.disabled = false;
+                btn.innerText = isLoginMode ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
 
-                    if(type === 'login') {
-                        localStorage.setItem('currentUser', u);
-                        alert("Đăng nhập thành công! (Chuyển hướng...)");
+                if (data.success) {
+                    if (isLoginMode) {
+                        // QUAN TRỌNG: Lưu Role server trả về vào máy
+                        localStorage.setItem('currentUser', data.username);
+                        localStorage.setItem('userRole', data.role); // <-- Role admin hay viewer ở đây
+                        
+                        alert("Đăng nhập thành công!");
                         window.location.href = 'dashboard.html';
                     } else {
-                        alert("Đăng ký thành công! Vui lòng chuyển sang Đăng nhập.");
-                        toggleMode(); 
+                        alert("Đăng ký thành công! Hãy đăng nhập ngay.");
+                        toggleMode();
                     }
-                }, 500);
+                } else {
+                    alert("LỖI: " + data.message);
+                }
 
             } catch (error) {
                 console.error(error);
-                alert("Có lỗi xảy ra!");
+                alert("Không kết nối được tới Server!");
             }
         }
 
         function forgotPassword() {
-            alert("Chức năng quên mật khẩu đang phát triển!");
+            const email = prompt("Nhập email đăng ký của bạn:");
+            if(email) {
+                fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email})
+                })
+                .then(res => res.json())
+                .then(data => alert(data.message));
+            }
         }
     </script>
 </body>
