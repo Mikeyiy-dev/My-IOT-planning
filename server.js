@@ -119,5 +119,46 @@ app.post('/api/control-pump', async (req, res) => {
 
 // Forgot Password (Giữ nguyên...)
 app.post('/forgot-password', async (req, res) => {/*Code cũ của bạn*/});
+// --- API ĐỔI MẬT KHẨU (MỚI THÊM) ---
+app.post('/api/change-password', async (req, res) => {
+    const { username, oldPassword, newPassword } = req.body;
+    
+    // 1. Tìm user
+    const user = await User.findOne({ username });
+    if (!user) return res.json({ success: false, message: "User không tồn tại!" });
 
+    // 2. Kiểm tra mật khẩu cũ có đúng không
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.json({ success: false, message: "Mật khẩu cũ không đúng!" });
+
+    // 3. Mã hóa mật khẩu mới và lưu lại
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    console.log(`🔐 User ${username} vừa đổi mật khẩu.`);
+    res.json({ success: true, message: "Đổi mật khẩu thành công!" });
+});
+// --- API XÓA USER (CHỈ SUPER ADMIN) ---
+app.post('/api/delete-user', async (req, res) => {
+    const { requestBy, targetUser } = req.body;
+
+    // 1. Chỉ cho phép Mikeyiy thực hiện
+    if (requestBy !== SUPER_ADMIN) {
+        return res.json({ success: false, message: "Bạn không đủ quyền hạn để xóa người khác!" });
+    }
+
+    // 2. Không cho phép tự xóa chính mình
+    if (targetUser === SUPER_ADMIN) {
+        return res.json({ success: false, message: "Không thể xóa tài khoản Super Admin!" });
+    }
+
+    // 3. Thực hiện xóa
+    try {
+        await User.deleteOne({ username: targetUser });
+        console.log(`❌ SUPER ADMIN đã xóa user: ${targetUser}`);
+        res.json({ success: true, message: `Đã xóa bay màu tài khoản ${targetUser}!` });
+    } catch (e) {
+        res.json({ success: false, message: "Lỗi Database: " + e.message });
+    }
+});
 http.listen(3000, () => console.log('🚀 Server running...'));

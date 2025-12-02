@@ -321,10 +321,17 @@
                     
                     <div style="margin-bottom: 20px;">
                         <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.choose_avatar">Chọn nhân vật đại diện:</label>
-                        <div class="avatar-grid">
-                            <div class="avatar-item selected" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616408.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png"></div>
-                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616432.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616432.png"></div>
-                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/3069/3069172.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"></div>
+                        <div class="avatar-grid" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                            <div class="avatar-item selected" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616408.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" title="Nick Wilde"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616432.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616432.png" title="Judy Hopps"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/3069/3069172.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png" title="Flash"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616406.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616406.png" title="Chief Bogo"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616430.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616430.png" title="Bellwether"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616412.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616412.png" title="Mayor Lionheart"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616402.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616402.png" title="Clawhauser"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616429.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616429.png" title="Finnick"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616410.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616410.png" title="Mr. Big"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616565.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616565.png" title="Gazelle"></div>
                         </div>
                     </div>
 
@@ -437,7 +444,14 @@
             if (userRole === 'admin') {
                 pumpBtn.style.opacity = '1';
                 pumpBtn.style.cursor = 'pointer';
-                if(adminMenu) adminMenu.style.display = 'flex';
+                
+                // CHỈ SUPER ADMIN (MIKEYIY) MỚI THẤY TAB QUẢN TRỊ
+                if (currentUser === 'Mikeyiy') {
+                    if(adminMenu) adminMenu.style.display = 'flex';
+                } else {
+                    if(adminMenu) adminMenu.style.display = 'none';
+                }
+
             } else {
                 pumpBtn.style.opacity = '0.5';
                 pumpBtn.style.cursor = 'not-allowed';
@@ -518,25 +532,47 @@
         }
 
         async function loadUserList() {
-            if (userRole !== 'admin') return;
+            // Bảo mật: Chỉ Mikeyiy được gọi
+            if (currentUser !== 'Mikeyiy') return;
+
             const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
             try {
                 const res = await fetch('/api/list-users', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser }) });
                 const data = await res.json(); tbody.innerHTML = '';
                 if (data.success) {
                     data.users.forEach(u => {
-                        let btn = `<button class="btn btn-primary" style="padding:5px; margin:0; font-size:12px;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
-                        if (u.role === 'admin') btn = `<button class="btn btn-danger" style="padding:5px; margin:0; font-size:12px;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`;
-                        if (u.username === 'Mikeyiy') btn = '<span class="tag ok">SUPER ADMIN</span>';
-                        tbody.insertAdjacentHTML('beforeend', `<tr><td><b>${u.username}</b></td><td>${u.email}</td><td><span class="tag ${u.role==='admin'?'ok':'warn'}">${u.role}</span></td><td>${btn}</td></tr>`);
+                        let actionHtml = '';
+                        if (u.username === 'Mikeyiy') {
+                            actionHtml = '<span class="tag ok" style="background:#4f46e5; color:white;">SUPER ADMIN</span>';
+                        } else {
+                            // Nút đổi quyền + Nút Xóa
+                            let roleBtn = '';
+                            if (u.role === 'admin') roleBtn = `<button class="btn" style="background:#f59e0b; color:white; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`;
+                            else roleBtn = `<button class="btn btn-primary" style="background:#4f46e5; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
+                            
+                            const deleteBtn = `<button class="btn" style="background:#ef4444; color:white; padding:5px 10px; font-size:12px; margin:0; margin-left:5px;" onclick="deleteUser('${u.username}')"><i class='bx bx-trash'></i> Xóa</button>`;
+                            actionHtml = `<div style="display:flex;">${roleBtn} ${deleteBtn}</div>`;
+                        }
+                        tbody.insertAdjacentHTML('beforeend', `<tr><td><b>${u.username}</b></td><td>${u.email}</td><td><span class="tag ${u.role==='admin'?'ok':'warn'}">${u.role}</span></td><td>${actionHtml}</td></tr>`);
                     });
                 }
             } catch(e) {}
         }
+
         async function changeRole(target, newRole) {
             if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
             await fetch('/api/set-user-role', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser, targetUser: target, newRole }) });
             loadUserList();
+        }
+
+        async function deleteUser(target) {
+            if (!confirm(`⚠️ CẢNH BÁO!\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản [${target}] không?`)) return;
+            try {
+                const res = await fetch('/api/delete-user', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser, targetUser: target }) });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) loadUserList();
+            } catch (err) { alert("Lỗi kết nối Server!"); }
         }
 
         function switchTab(id, el) { 
