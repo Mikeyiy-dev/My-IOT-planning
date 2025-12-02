@@ -10,14 +10,15 @@
             background: url('https://images.unsplash.com/photo-1532767153582-b1a0e5145009?q=80&w=2668&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh; display: flex; justify-content: center; align-items: center;
+            height: 100vh; display: flex; justify-content:  flex-end; align-items: center;
         }
 
         /* KHUNG KÍNH - Giữ nguyên width: 320px như yêu cầu */
         .glass-box {
             width: 320px; 
             padding: 40px 30px; /* Tăng padding chút cho thoáng */
-            
+            margin-right: 10%; /* Điều chỉnh số này để di chuyển khung xa/gần lề phải hơn */
+
             /* Hiệu ứng kính mờ sáng hơn giống mẫu */
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(20px);
