@@ -2,90 +2,191 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng nhập IoT</title>
+    <title>Đăng nhập IoT - ShadowFox</title>
     <style>
         body {
             margin: 0; padding: 0;
-            background: url('background.jpg') no-repeat center center fixed;
+            /* Ảnh nền hoạt hình đêm giống mẫu */
+            background: url('https://images.unsplash.com/photo-1532767153582-b1a0e5145009?q=80&w=2668&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             height: 100vh; display: flex; justify-content: center; align-items: center;
         }
+
+        /* KHUNG KÍNH - Giữ nguyên width: 320px như yêu cầu */
         .glass-box {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 40px; border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.2);
-            width: 320px; text-align: center; color: white;
+            width: 320px; 
+            padding: 40px 30px; /* Tăng padding chút cho thoáng */
+            
+            /* Hiệu ứng kính mờ sáng hơn giống mẫu */
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.4);
+            text-align: center; color: white;
+            position: relative;
         }
         
-        h2 { margin-bottom: 5px; font-weight: 600; }
+        /* Logo tròn */
+        .logo-container {
+            width: 80px; height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .logo-container img { width: 60px; }
+
+        /* Tiêu đề chính */
+        h2 { 
+            margin: 0; 
+            font-weight: 800; 
+            font-size: 20px; /* Cỡ chữ vừa vặn */
+            color: #0056b3; /* Màu xanh đậm sang trọng */
+            text-transform: uppercase;
+            text-shadow: 0px 0px 10px rgba(255,255,255,0.8);
+            letter-spacing: 0.5px;
+        }
+        
+        /* Câu slogan */
         .slogan {
-            margin: 0 0 20px 0; font-size: 0.9em; opacity: 0.8; font-weight: 300;
+            margin: 10px 0 25px 0; 
+            font-size: 0.85em; 
+            color: #f0f0f0;
+            font-weight: 400;
+            line-height: 1.5;
         }
 
-        input {
-            width: 100%; padding: 12px; margin: 8px 0; /* Chỉnh margin nhỏ lại chút cho gọn */
-            border: none; border-radius: 25px; outline: none;
-            background: rgba(255,255,255,0.9); box-sizing: border-box;
-            font-size: 14px;
+        /* Group chứa Input và Label */
+        .input-group {
+            text-align: left;
+            margin-bottom: 15px;
+            position: relative;
         }
         
-        /* CSS cho dòng Quên mật khẩu */
-        .forgot-link {
-            display: block; text-align: right;
-            margin-top: 5px; margin-bottom: 15px; margin-right: 10px;
-            color: #fff; font-size: 13px; text-decoration: none; opacity: 0.9; cursor: pointer;
+        .input-label {
+            font-size: 13px;
+            margin-left: 15px;
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
-        .forgot-link:hover { text-decoration: underline; opacity: 1; }
 
+        /* Ô nhập liệu pill-shape */
+        input {
+            width: 100%; 
+            padding: 12px 12px 12px 40px; /* Padding trái 40px để chừa chỗ cho Icon */
+            border: 2px solid rgba(255,255,255,0.5); 
+            border-radius: 50px; /* Bo tròn hoàn toàn */
+            outline: none;
+            background: rgba(255,255,255,0.95); 
+            box-sizing: border-box;
+            font-size: 14px;
+            color: #333;
+            transition: 0.3s;
+        }
+        input:focus {
+            border-color: #0072ff;
+            background: #fff;
+        }
+
+        /* Icon bên trong Input */
+        .icon {
+            position: absolute;
+            left: 15px;
+            top: 32px; /* Căn chỉnh theo vị trí label */
+            font-size: 16px;
+            color: #666;
+        }
+        /* Đổi màu icon khi focus vào ô nhập */
+        .input-group:focus-within .icon { color: #0072ff; }
+
+        /* Nút Đăng Nhập Xanh Dương */
         .btn-login {
-            width: 100%; padding: 12px; margin-top: 5px;
-            border: none; border-radius: 25px;
-            background: #0072ff; color: white; font-weight: bold; cursor: pointer;
-            transition: 0.3s;
+            width: 100%; padding: 12px; margin-top: 10px;
+            border: none; border-radius: 50px;
+            background: linear-gradient(90deg, #0072ff 0%, #00c6ff 100%);
+            color: white; font-weight: 700; font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            transition: transform 0.2s;
         }
-        .btn-login:hover { background: #005bb5; }
+        .btn-login:hover { transform: scale(1.03); }
 
-        .btn-register {
-            width: 100%; padding: 8px; margin-top: 10px;
-            border: 1px solid white; border-radius: 25px;
-            background: transparent; color: white; cursor: pointer;
-            transition: 0.3s;
+        /* Footer Links - Căn giữa và xếp dọc */
+        .footer-links {
+            margin-top: 25px;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column; /* Xếp dọc */
+            align-items: center;    /* Căn giữa */
+            gap: 12px;              /* Khoảng cách giữa các dòng */
         }
-        .btn-register:hover { background: rgba(255,255,255,0.2); }
+        .footer-links a {
+            color: #fff; text-decoration: none; cursor: pointer; opacity: 0.9;
+        }
+        .footer-links a:hover { text-decoration: underline; opacity: 1; font-weight: bold; }
+        
+        /* Màu chữ riêng cho dòng Đăng ký */
+        .btn-register-text { color: #8ecae6 !important; font-weight: bold; font-size: 14px; }
+
     </style>
 </head>
 <body>
     <div class="glass-box">
-        <img src="logo.png" style="width: 80px; border-radius: 50%; margin-bottom: 15px;" alt="Logo">
+        <!-- Logo Container -->
+        <div class="logo-container">
+            <!-- Thay logo.png bằng đường dẫn logo của bạn -->
+            <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" alt="Logo">
+        </div>
         
-        <h2>Welcome to ShadowFox</h2>
-        <p class="slogan">Silent in operation - Powerful in data</p>
+        <!-- Tiêu đề mới -->
+        <h2>WELCOME TO SHADOWFOX</h2>
+        <!-- Slogan mới chuyên nghiệp -->
+        <p class="slogan">Truy cập hệ sinh thái IoT thông minh & bảo mật.<br>Silent in operation - Powerful in data</p>
         
-        <!-- THÊM Ô NHẬP EMAIL (QUAN TRỌNG) -->
-        <input type="text" id="email" placeholder="Email (Bắt buộc khi đăng ký)">
+        <!-- Ô Nhập Email -->
+        <div class="input-group">
+            <label class="input-label">Email</label>
+            <span class="icon">💌</span>
+            <input type="text" id="email" placeholder="Nhập email của bạn">
+        </div>
+
+        <!-- Ô Nhập Tên đăng nhập -->
+        <div class="input-group">
+            <label class="input-label">Tài khoản</label>
+            <span class="icon">🦊</span>
+            <input type="text" id="username" placeholder="Nhập tên đăng nhập">
+        </div>
         
-        <input type="text" id="username" placeholder="Tên đăng nhập">
-        <input type="password" id="password" placeholder="Mật khẩu">
-        
-        <!-- THÊM DÒNG QUÊN MẬT KHẨU -->
-        <a class="forgot-link" onclick="forgotPassword()">Quên mật khẩu?</a>
+        <!-- Ô Nhập Mật khẩu -->
+        <div class="input-group">
+            <label class="input-label">Mật khẩu</label>
+            <span class="icon">🗝️</span>
+            <input type="password" id="password" placeholder="Nhập mật khẩu">
+        </div>
         
         <button class="btn-login" onclick="handleAuth('login')">ĐĂNG NHẬP</button>
-        <button class="btn-register" onclick="handleAuth('register')">Đăng ký mới</button>
+        
+        <!-- Footer Links -->
+        <div class="footer-links">
+            <a class="btn-register-text" onclick="handleAuth('register')">Chưa có tài khoản? Đăng ký</a>
+            <a onclick="forgotPassword()">Quên mật khẩu?</a>
+        </div>
     </div>
 
+    <!-- CODE JAVASCRIPT XỬ LÝ -->
     <script>
-        // Hàm Xử lý Đăng ký / Đăng nhập
         async function handleAuth(type) {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            const e = document.getElementById('email').value; // Lấy thêm Email
+            const e = document.getElementById('email').value;
 
-            // Kiểm tra dữ liệu đầu vào
             if(type === 'register') {
                 if(!u || !p || !e) return alert("Vui lòng nhập Tên, Mật khẩu và Email để đăng ký!");
             } else {
@@ -93,12 +194,12 @@
             }
 
             try {
+                // Giả lập logic kết nối server
                 const url = type === 'login' ? '/login' : '/register';
                 
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    // Gửi cả Email lên server
                     body: JSON.stringify({username: u, password: p, email: e})
                 });
                 const data = await res.json();
@@ -115,21 +216,18 @@
                 }
             } catch (error) {
                 console.error("Lỗi:", error);
-                alert("Không thể kết nối tới Server!");
+                // Thông báo giả lập để test giao diện
+                if(type==='login') alert("Giao diện đẹp quá! (Lỗi kết nối server thật)"); 
+                else alert("Không thể kết nối tới Server!");
             }
         }
 
-        // Hàm Xử lý Quên mật khẩu
         async function forgotPassword() {
-            // Hỏi Email người dùng
             const emailInput = prompt("Nhập Email bạn đã dùng để đăng ký:");
-            if (!emailInput) return; // Nếu bấm hủy thì thôi
+            if (!emailInput) return;
 
-            // Gọi lên Server xin cấp lại mật khẩu
             try {
-                // Thông báo chờ để người dùng biết
                 document.body.style.cursor = "wait"; 
-                
                 const res = await fetch('/forgot-password', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -138,7 +236,7 @@
                 const data = await res.json();
                 
                 document.body.style.cursor = "default";
-                alert(data.message); // Hiện thông báo từ server (Thành công hoặc Lỗi)
+                alert(data.message);
             } catch (error) {
                 document.body.style.cursor = "default";
                 alert("Lỗi kết nối! Kiểm tra lại server.");
