@@ -47,9 +47,14 @@
             text-shadow: 0px 0px 10px rgba(255,255,255,0.8); letter-spacing: 0.5px;
         }
         
+        /* ĐÃ SỬA: Màu chữ Slogan giống màu chữ nhập trong Input (#333) */
         .slogan {
-            margin: 10px 0 25px 0; font-size: 0.85em; color: #f0f0f0;
-            font-weight: 400; line-height: 1.5;
+            margin: 10px 0 25px 0; 
+            font-size: 0.85em; 
+            color: #333; /* Màu đen xám */
+            font-weight: 500; 
+            line-height: 1.5;
+            text-shadow: none; /* Bỏ bóng để chữ nét hơn */
         }
 
         .input-group { text-align: left; margin-bottom: 15px; position: relative; }
@@ -64,7 +69,9 @@
             width: 100%; padding: 12px 12px 12px 40px;
             border: 2px solid rgba(255,255,255,0.5); border-radius: 50px;
             outline: none; background: rgba(255,255,255,0.95); 
-            box-sizing: border-box; font-size: 14px; color: #333; transition: 0.3s;
+            box-sizing: border-box; font-size: 14px; 
+            color: #333; /* Màu chữ khi nhập */
+            transition: 0.3s;
         }
         input:focus { border-color: #0072ff; background: #fff; }
 
@@ -85,9 +92,19 @@
             margin-top: 25px; font-size: 13px; display: flex;
             flex-direction: column; align-items: center; gap: 12px;
         }
-        .footer-links a { color: #fff; text-decoration: none; cursor: pointer; opacity: 0.9; }
-        .footer-links a:hover { text-decoration: underline; opacity: 1; font-weight: bold; }
-        .btn-register-text { color: #8ecae6 !important; font-weight: bold; font-size: 14px; }
+        
+        /* ĐÃ SỬA: Màu chữ Quên mật khẩu giống màu Slogan (#333) */
+        .footer-links a { 
+            color: #333; /* Màu đen xám */
+            text-decoration: none; 
+            cursor: pointer; 
+            opacity: 0.9;
+            text-shadow: none;
+            font-weight: 500;
+        }
+        .footer-links a:hover { text-decoration: underline; font-weight: bold; color: #000; }
+        
+        .btn-register-text { color: #0056b3 !important; font-weight: bold; font-size: 14px; text-shadow: none; }
     </style>
 </head>
 <body>
@@ -96,7 +113,7 @@
             <img src="logo.png" alt="Logo">
         </div>
         
-        <h2 id="form-title">WELCOME SHADOWFOX</h2>
+        <h2 id="form-title">WELCOME TO SHADOWFOX</h2>
         <p class="slogan">Truy cập hệ sinh thái IoT thông minh & bảo mật.<br>Silent in operation - Powerful in data</p>
         
         <form id="authForm" onsubmit="handleFormSubmit(event)">
@@ -160,9 +177,7 @@
             const u = document.getElementById('username').value;
             const type = isLoginMode ? 'login' : 'register';
 
-            // --- PHẦN XỬ LÝ CHUYỂN TRANG (QUAN TRỌNG) ---
             try {
-                // Giả lập độ trễ mạng 0.5s cho giống thật
                 const btn = document.getElementById('btn-action');
                 const originalText = btn.innerText;
                 btn.innerText = "Đang xử lý...";
@@ -173,17 +188,12 @@
                     btn.disabled = false;
 
                     if(type === 'login') {
-                        // 1. Lưu tên người dùng
                         localStorage.setItem('currentUser', u);
-                        
-                        // 2. Thông báo
                         alert("Đăng nhập thành công! (Chuyển hướng...)");
-                        
-                        // 3. CHUYỂN HƯỚNG SANG DASHBOARD
                         window.location.href = 'dashboard.html';
                     } else {
                         alert("Đăng ký thành công! Vui lòng chuyển sang Đăng nhập.");
-                        toggleMode(); // Tự động chuyển về form đăng nhập
+                        toggleMode(); 
                     }
                 }, 500);
 
