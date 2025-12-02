@@ -365,3 +365,209 @@
                     </table>
                 </div>
             </div>
+
+            <div id="tab-admin" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class='bx bx-user-voice'></i> Quản lý người dùng</span>
+                        <button class="btn btn-primary" onclick="loadUserList()" style="width: auto;">Làm mới</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Tên tài khoản</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userListBody">
+                                <tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-account" class="tab-content">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <div class="card-header"><span class="card-title"><i class='bx bx-id-card'></i> <span data-i18n="account.title">Thông tin tài khoản</span></span></div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img id="previewAvatar" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: contain; border: 4px solid var(--primary-light); background: #f8fafc; padding: 10px;">
+                        <h2 style="margin-top: 10px;" id="previewName">User</h2>
+                        <span class="tag ok" id="previewRole">Viewer</span>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.choose_avatar">Chọn nhân vật đại diện:</label>
+                        <div class="avatar-grid">
+                            <div class="avatar-item selected" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616408.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616432.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616432.png"></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveProfile()" data-i18n="btn.save">Lưu thay đổi</button>
+                    <button class="btn btn-danger" onclick="logout()" data-i18n="btn.logout">Đăng xuất</button>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="tab-content">
+                <div class="card" style="max-width: 650px; margin: 0 auto;">
+                    <div class="card-header"><span class="card-title"><i class='bx bx-cog'></i> <span data-i18n="settings.title">Cài đặt hệ thống</span></span></div>
+                    <div class="setting-section">
+                        <div class="setting-title" data-i18n="settings.interface">Giao diện</div>
+                        <div class="setting-row">
+                            <div class="setting-info"><h4 data-i18n="settings.dark_mode">Chế độ Tối</h4><p data-i18n="settings.dark_mode_desc">Giao diện tối bảo vệ mắt.</p></div>
+                            <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- 1. CẤU HÌNH ---
+        const mqttHost = "broker.hivemq.com"; 
+        const mqttPort = 8884;
+        const mqttTopic = "shadowfox/system_data";
+        
+        let client = null;
+        let lastLevel = 0; let lastPump = false; let lastSiren = false;
+        
+        // --- 2. LẤY THÔNG TIN ĐĂNG NHẬP ---
+        const currentUser = localStorage.getItem('currentUser') || "Guest"; 
+        let userRole = localStorage.getItem('userRole') || 'viewer';
+
+        // SUPER ADMIN CHECK
+        if (currentUser === 'Mikeyiy') userRole = 'admin';
+
+        // --- 3. KHỞI TẠO ---
+        function init() {
+            // Cập nhật UI Tên & Avatar
+            document.getElementById('sidebarName').innerText = currentUser;
+            document.getElementById('headerName').innerText = currentUser;
+            document.getElementById('sidebarRole').innerText = userRole.toUpperCase();
+            document.getElementById('previewName').innerText = currentUser;
+            document.getElementById('previewRole').innerText = userRole.toUpperCase();
+            
+            let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png";
+            document.getElementById('sidebarAvatar').src = currentAvatar;
+            document.getElementById('previewAvatar').src = currentAvatar;
+
+            // PHÂN QUYỀN
+            const pumpBtn = document.getElementById('btnPump');
+            const adminMenu = document.getElementById('menuAdmin');
+
+            if (userRole === 'admin') {
+                pumpBtn.style.opacity = '1';
+                pumpBtn.style.cursor = 'pointer';
+                if(adminMenu) adminMenu.style.display = 'flex';
+            } else {
+                pumpBtn.style.opacity = '0.5';
+                pumpBtn.style.cursor = 'not-allowed';
+                pumpBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); };
+                document.getElementById('pumpText').innerText = "CHỈ XEM (VIEW ONLY)";
+                if(adminMenu) adminMenu.style.display = 'none';
+            }
+
+            // Dark Mode
+            if(localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').checked = true;
+            }
+
+            connectMQTT();
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // --- 4. CÁC HÀM CHỨC NĂNG ---
+        async function togglePump() {
+            if (userRole !== 'admin') return;
+            const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
+            const action = isCurrentlyOn ? 'OFF' : 'ON';
+            document.getElementById('pumpText').innerText = "Đang gửi...";
+            
+            try {
+                const r = await fetch('/api/control-pump', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: currentUser, action })
+                });
+                const d = await r.json();
+                if (!d.success) alert("Lỗi: " + d.message);
+            } catch(e) { alert("Lỗi kết nối Server!"); }
+        }
+
+        async function loadUserList() {
+            if (userRole !== 'admin') return;
+            const tbody = document.getElementById('userListBody');
+            tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+            try {
+                const res = await fetch('/api/list-users', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ requestBy: currentUser })
+                });
+                const data = await res.json();
+                tbody.innerHTML = '';
+                if (data.success) {
+                    data.users.forEach(u => {
+                        let btn = `<button class="btn btn-primary" style="padding:5px; margin:0; font-size:12px;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
+                        if (u.role === 'admin') btn = `<button class="btn btn-danger" style="padding:5px; margin:0; font-size:12px;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`;
+                        if (u.username === 'Mikeyiy') btn = '<span class="tag ok">SUPER ADMIN</span>';
+                        tbody.insertAdjacentHTML('beforeend', `<tr><td><b>${u.username}</b></td><td>${u.email}</td><td><span class="tag ${u.role==='admin'?'ok':'warn'}">${u.role}</span></td><td>${btn}</td></tr>`);
+                    });
+                }
+            } catch(e) {}
+        }
+
+        async function changeRole(target, newRole) {
+            if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
+            await fetch('/api/set-user-role', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ requestBy: currentUser, targetUser: target, newRole })
+            });
+            loadUserList();
+        }
+
+        function switchTab(id, el) { 
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
+            document.getElementById('tab-'+id).classList.add('active'); 
+            if(el) { document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); }
+        }
+
+        function logout() {
+            if(confirm("Đăng xuất?")) { localStorage.removeItem('currentUser'); localStorage.removeItem('userRole'); window.location.href='index.html'; }
+        }
+        function saveProfile() { localStorage.reload(); }
+        function selectAvatar(u, e) { localStorage.setItem('currentAvatar', u); document.querySelectorAll('.avatar-item').forEach(i=>i.classList.remove('selected')); e.classList.add('selected'); document.getElementById('previewAvatar').src=u; }
+        function toggleDarkMode() { const d = document.getElementById('darkModeToggle').checked; if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', d); }
+
+        function updateTime() { const now = new Date(); document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('vi-VN',{hour12:false}); }
+
+        // MQTT
+        function connectMQTT() {
+            const clientId = "web-" + Math.random().toString(16).substr(2, 8);
+            client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
+            client.onMessageArrived = (msg) => {
+                try { 
+                    const data = JSON.parse(msg.payloadString);
+                    document.getElementById('waterLevelText').innerText = data.waterLevel + "%";
+                    gaugeChart.updateSeries([data.waterLevel]);
+                    const btn = document.getElementById('btnPump');
+                    if(data.isPumpOn) { btn.classList.add('active'); if(userRole==='admin') document.getElementById('pumpText').innerText="ĐANG CHẠY"; }
+                    else { btn.classList.remove('active'); if(userRole==='admin') document.getElementById('pumpText').innerText="ĐANG TẮT"; }
+                } catch(e){}
+            };
+            client.connect({ onSuccess: () => { client.subscribe(mqttTopic); document.getElementById('mqttStatus').className = 'iot-status connected'; document.getElementById('mqttText').innerText="Đã kết nối"; }, useSSL: true });
+        }
+
+        // CHARTS
+        var lineChart = new ApexCharts(document.querySelector("#lineChart"), { series: [{name:'Nước',data:[0]}], chart: {type:'area',height:250,toolbar:{show:false}}, stroke:{curve:'smooth'} }); lineChart.render();
+        var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
+
+        // CHẠY
+        init();
+    </script>
+</body>
+</html>
