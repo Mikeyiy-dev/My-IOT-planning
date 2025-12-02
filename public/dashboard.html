@@ -41,8 +41,9 @@
             border-color: rgba(255,255,255,0.1);
         }
         body.dark-mode .menu-item:hover { background: #334155; }
-        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td {
+        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td, body.dark-mode .form-select {
             border-color: #334155;
+            background: #1e293b; color: #f1f5f9;
         }
         body.dark-mode .upload-zone { background: #1e293b; border-color: #475569; }
         body.dark-mode .pump-card:hover { background: #334155; }
@@ -56,7 +57,7 @@
             display: flex; min-height: 100vh; color: var(--text-main);
         }
 
-        /* --- SIDEBAR --- */
+        /* SIDEBAR */
         .sidebar {
             width: var(--sidebar-w);
             background: rgba(255, 255, 255, 0.9);
@@ -67,151 +68,71 @@
             box-shadow: var(--shadow);
             z-index: 100; border: 1px solid rgba(255,255,255,0.5);
         }
-        
-        .logo-box {
-            padding: 25px 20px; display: flex; align-items: center; gap: 12px;
-            border-bottom: 1px solid var(--primary-light);
-        }
+        .logo-box { padding: 25px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--primary-light); }
         .logo-img { width: 45px; height: auto; max-height: 45px; object-fit: contain; }
         .logo-text h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
         .logo-text span { font-size: 12px; color: var(--text-light); }
-
         .menu { list-style: none; padding: 20px; flex: 1; }
-        .menu-item {
-            padding: 14px 16px; margin-bottom: 8px; border-radius: 12px;
-            display: flex; align-items: center; gap: 14px; color: var(--secondary);
-            cursor: pointer; transition: 0.2s; font-weight: 500; font-size: 15px;
-        }
+        .menu-item { padding: 14px 16px; margin-bottom: 8px; border-radius: 12px; display: flex; align-items: center; gap: 14px; color: var(--secondary); cursor: pointer; transition: 0.2s; font-weight: 500; font-size: 15px; }
         .menu-item:hover { background: #f8fafc; color: var(--primary); }
-        .menu-item.active { 
-            background: var(--primary); color: white; font-weight: 600;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
+        .menu-item.active { background: var(--primary); color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
         .menu-item i { font-size: 22px; }
-
-        .user-footer {
-            padding: 20px; border-top: 1px solid #f1f5f9;
-            display: flex; align-items: center; gap: 12px; cursor: pointer;
-            transition: 0.2s;
-        }
+        .user-footer { padding: 20px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
         .user-footer:hover { background: var(--primary-light); border-radius: 0 0 var(--radius) var(--radius); }
-        .user-avatar { 
-            width: 40px; height: 40px; border-radius: 10px; object-fit: contain;
-            background: #f1f5f9; padding: 2px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .user-avatar { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; background: #f1f5f9; padding: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* --- MAIN CONTENT --- */
+        /* MAIN CONTENT */
         .main { flex: 1; padding: 2vh 2vh 2vh 0; overflow-y: auto; height: 100vh; }
+        .content-container { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); border-radius: var(--radius); min-height: 96vh; padding: 30px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5); display: flex; flex-direction: column; }
         
-        .content-container {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(15px);
-            border-radius: var(--radius);
-            min-height: 96vh; padding: 30px;
-            box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5);
-            display: flex; flex-direction: column;
-        }
-
-        /* HEADER */
-        .top-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; padding-bottom: 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .greeting h2 { margin: 0; font-size: 24px; color: var(--text-main); }
         .date-display { color: var(--text-light); font-size: 14px; margin-top: 5px; font-weight: 500; }
-        .clock-display {
-            font-size: 32px; font-weight: 700; color: var(--primary);
-            font-variant-numeric: tabular-nums;
-            background: rgba(255,255,255,0.5); padding: 5px 20px; border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
+        .clock-display { font-size: 32px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; background: rgba(255,255,255,0.5); padding: 5px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-        /* IOT STATUS */
-        .iot-status {
-            font-size: 12px; padding: 5px 10px; border-radius: 20px; background: #eee; color: #666;
-            display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
-        }
+        .iot-status { font-size: 12px; padding: 5px 10px; border-radius: 20px; background: #eee; color: #666; display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; }
         .iot-status.connected { background: #d1fae5; color: #065f46; }
         .iot-dot { width: 8px; height: 8px; background: #ccc; border-radius: 50%; }
         .iot-status.connected .iot-dot { background: #10b981; box-shadow: 0 0 5px #10b981; }
 
-        /* TABS */
         .tab-content { display: none; animation: fadeIn 0.4s ease; flex: 1; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* GRID LAYOUTS */
         .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
-
-        /* CARDS */
-        .card {
-            background: var(--bg-card); border-radius: 16px; padding: 24px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
-            margin-bottom: 25px; position: relative; overflow: hidden;
-        }
+        .card { background: var(--bg-card); border-radius: 16px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 25px; position: relative; overflow: hidden; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .card-title i { color: var(--primary); font-size: 20px; }
 
-        /* WIDGETS */
-        .camera-container {
-            width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;
-            overflow: hidden; position: relative;
-        }
+        .camera-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; position: relative; }
         .camera-container img { width: 100%; height: 100%; object-fit: cover; }
-        .live-badge {
-            position: absolute; top: 12px; left: 12px;
-            background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 10px;
-            border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-            display: flex; align-items: center; gap: 6px;
-        }
+        .live-badge { position: absolute; top: 12px; left: 12px; background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
         .live-badge::before { content:''; width: 6px; height: 6px; background: white; border-radius: 50%; }
 
-        .pump-card {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-            padding: 40px 20px; transition: 0.3s; cursor: pointer; border: 2px solid transparent;
-        }
+        .pump-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; transition: 0.3s; cursor: pointer; border: 2px solid transparent; }
         .pump-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .pump-icon {
-            width: 70px; height: 70px; background: var(--primary-light); color: var(--primary);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 32px; margin-bottom: 15px; transition: 0.3s;
-        }
+        .pump-icon { width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 15px; transition: 0.3s; }
         .pump-card.active { border-color: var(--primary); background: #f0f7ff; }
         .pump-card.active .pump-icon { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
 
         .stat-value { font-size: 36px; font-weight: 700; color: var(--text-main); margin: 10px 0; }
-        .alert-box {
-            padding: 15px; border-radius: 12px; background: #ecfdf5; color: var(--success);
-            font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #d1fae5;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        .alert-box { padding: 15px; border-radius: 12px; background: #ecfdf5; color: var(--success); font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #d1fae5; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .alert-box.danger { background: #fef2f2; color: var(--danger); border-color: #fee2e2; }
 
         .avatar-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
-        .avatar-item {
-            width: 70px; height: 70px; border-radius: 50%; padding: 10px; border: 3px solid #e2e8f0;
-            cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; background: #fff;
-        }
+        .avatar-item { width: 70px; height: 70px; border-radius: 50%; padding: 10px; border: 3px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; background: #fff; }
         .avatar-item img { width: 100%; height: 100%; object-fit: contain; }
         .avatar-item:hover, .avatar-item.selected { border-color: var(--primary); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         .input-modern { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; margin-top: 10px; outline: none; transition: 0.2s; background: var(--bg-card); color: var(--text-main); }
         .input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-
+        
         .btn { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
         .btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
         .btn-primary:hover { background: #4338ca; }
         .btn-danger { background: #fee2e2; color: var(--danger); width: 100%; margin-top: 10px; }
         .btn-danger:hover { background: #fecaca; }
-
-        .upload-zone { 
-            display: block; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align: center; 
-            cursor: pointer; color: var(--secondary); transition: 0.3s; background: var(--bg-card); 
-        }
-        .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
 
         .modern-table { width: 100%; border-collapse: collapse; }
         .modern-table th { text-align: left; padding: 16px; color: var(--text-light); font-weight: 600; border-bottom: 1px solid #e2e8f0; font-size: 13px; text-transform: uppercase; }
@@ -219,14 +140,13 @@
         .tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .tag.ok { background: #ecfdf5; color: var(--success); }
         .tag.warn { background: #fffbeb; color: var(--warning); }
-        .tag.err { background: #fef2f2; color: var(--danger); }
 
+        /* SETTINGS STYLES */
         .setting-section { margin-bottom: 30px; }
         .setting-title { font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
         .setting-info h4 { font-size: 15px; font-weight: 600; margin: 0 0 5px 0; color: var(--text-main); }
         .setting-info p { font-size: 13px; color: var(--text-light); margin: 0; }
-        
         .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
@@ -314,7 +234,6 @@
                                 <img id="camStream1" src="https://images.unsplash.com/photo-1518386377785-132b4b443213?q=80&w=2670&auto=format&fit=crop">
                             </div>
                         </div>
-                        
                         <div class="card">
                             <div class="card-header"><span class="card-title"><i class='bx bx-line-chart'></i> <span data-i18n="chart.title">Biểu đồ mực nước</span></span></div>
                             <div id="lineChart" style="min-height: 250px;"></div>
@@ -393,19 +312,30 @@
             <div id="tab-account" class="tab-content">
                 <div class="card" style="max-width: 500px; margin: 0 auto;">
                     <div class="card-header"><span class="card-title"><i class='bx bx-id-card'></i> <span data-i18n="account.title">Thông tin tài khoản</span></span></div>
+                    
                     <div style="text-align: center; margin-bottom: 20px;">
                         <img id="previewAvatar" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: contain; border: 4px solid var(--primary-light); background: #f8fafc; padding: 10px;">
                         <h2 style="margin-top: 10px;" id="previewName">User</h2>
                         <span class="tag ok" id="previewRole">Viewer</span>
                     </div>
+                    
                     <div style="margin-bottom: 20px;">
                         <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.choose_avatar">Chọn nhân vật đại diện:</label>
                         <div class="avatar-grid">
                             <div class="avatar-item selected" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616408.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png"></div>
                             <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616432.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616432.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/3069/3069172.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"></div>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="saveProfile()" data-i18n="btn.save">Lưu thay đổi</button>
+
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-main);">Đổi mật khẩu</h4>
+                        <input type="password" id="oldPass" class="input-modern" placeholder="Mật khẩu hiện tại">
+                        <input type="password" id="newPass" class="input-modern" placeholder="Mật khẩu mới (ít nhất 6 ký tự)">
+                        <button class="btn btn-primary" onclick="changePassword()" style="background: #64748b; margin-top: 10px; width: 100%;">Cập nhật mật khẩu</button>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveProfile()" data-i18n="btn.save" style="margin-top: 20px;">Lưu thay đổi</button>
                     <button class="btn btn-danger" onclick="logout()" data-i18n="btn.logout">Đăng xuất</button>
                 </div>
             </div>
@@ -413,11 +343,30 @@
             <div id="tab-settings" class="tab-content">
                 <div class="card" style="max-width: 650px; margin: 0 auto;">
                     <div class="card-header"><span class="card-title"><i class='bx bx-cog'></i> <span data-i18n="settings.title">Cài đặt hệ thống</span></span></div>
+                    
                     <div class="setting-section">
                         <div class="setting-title" data-i18n="settings.interface">Giao diện</div>
+                        
+                        <div class="setting-row">
+                            <div class="setting-info"><h4 data-i18n="settings.language">Ngôn ngữ</h4><p data-i18n="settings.language_desc">Chọn ngôn ngữ hiển thị.</p></div>
+                            <select class="form-select" id="langSelect" onchange="changeLanguage(this.value)">
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        
                         <div class="setting-row">
                             <div class="setting-info"><h4 data-i18n="settings.dark_mode">Chế độ Tối</h4><p data-i18n="settings.dark_mode_desc">Giao diện tối bảo vệ mắt.</p></div>
                             <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
+                        </div>
+                        
+                        <div class="setting-row">
+                            <div class="setting-info"><h4 data-i18n="settings.wallpaper">Hình nền</h4><p data-i18n="settings.wallpaper_desc">Tải ảnh từ máy tính.</p></div>
+                            <div>
+                                <label for="bgUpload" class="btn" style="background:var(--primary-light); color:var(--primary); cursor:pointer;">Upload</label>
+                                <input type="file" id="bgUpload" hidden onchange="changeBg(event)">
+                                <span style="font-size:12px; color:red; cursor:pointer; margin-left:10px;" onclick="resetBg()">[Xóa]</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -435,14 +384,40 @@
         let client = null;
         let lastLevel = 0; let lastPump = false; let lastSiren = false;
         
-        // --- 2. LẤY THÔNG TIN ĐĂNG NHẬP ---
+        // --- 2. HỆ THỐNG NGÔN NGỮ (Full) ---
+        const translations = {
+            vi: {
+                "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt",
+                "header.hello": "Xin chào", "iot.disconnected": "Ngắt kết nối", "iot.connected": "Đã kết nối",
+                "chart.title": "Biểu đồ mực nước", "gauge.title": "Mực nước hiện tại", "status.waiting": "Đang đợi dữ liệu...", "status.safe": "Hệ thống an toàn", "status.danger": "CẢNH BÁO NGẬP!",
+                "controls.title": "Điều khiển", "pump.name": "Máy Bơm", "pump.on": "Đang Hoạt Động", "pump.off": "Đang Tắt", "siren.label": "Trạng thái Còi hú:",
+                "logs.title": "Nhật ký hoạt động", "table.time": "Thời gian", "table.event": "Sự kiện", "table.detail": "Chi tiết", "table.status": "Trạng thái",
+                "account.title": "Thông tin tài khoản", "account.choose_avatar": "Chọn nhân vật đại diện:", 
+                "settings.title": "Cài đặt hệ thống", "settings.interface": "Giao diện", "settings.language": "Ngôn ngữ", "settings.language_desc": "Chọn ngôn ngữ hiển thị.",
+                "settings.dark_mode": "Chế độ Tối", "settings.dark_mode_desc": "Giao diện tối bảo vệ mắt.", "settings.wallpaper": "Hình nền", "settings.wallpaper_desc": "Tải ảnh từ máy tính.",
+                "btn.save": "Lưu thay đổi", "btn.logout": "Đăng xuất"
+            },
+            en: {
+                "menu.home": "Overview", "menu.camera": "Camera", "menu.logs": "Logs", "menu.account": "Account", "menu.settings": "Settings",
+                "header.hello": "Hello", "iot.disconnected": "Disconnected", "iot.connected": "Connected",
+                "chart.title": "Water Level Chart", "gauge.title": "Current Level", "status.waiting": "Waiting for data...", "status.safe": "System Safe", "status.danger": "FLOOD ALERT!",
+                "controls.title": "Controls", "pump.name": "Water Pump", "pump.on": "Running", "pump.off": "Stopped", "siren.label": "Siren Status:",
+                "logs.title": "Activity Logs", "table.time": "Time", "table.event": "Event", "table.detail": "Detail", "table.status": "Status",
+                "account.title": "Account Info", "account.choose_avatar": "Choose Avatar:",
+                "settings.title": "System Settings", "settings.interface": "Interface", "settings.language": "Language", "settings.language_desc": "Select display language.",
+                "settings.dark_mode": "Dark Mode", "settings.dark_mode_desc": "Switch to dark theme.", "settings.wallpaper": "Wallpaper", "settings.wallpaper_desc": "Upload image.",
+                "btn.save": "Save Changes", "btn.logout": "Logout"
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'vi';
+        
+        // --- 3. LẤY THÔNG TIN ĐĂNG NHẬP ---
         const currentUser = localStorage.getItem('currentUser') || "Guest"; 
         let userRole = localStorage.getItem('userRole') || 'viewer';
-
-        // SUPER ADMIN CHECK
         if (currentUser === 'Mikeyiy') userRole = 'admin';
 
-        // --- 3. KHỞI TẠO ---
+        // --- 4. KHỞI TẠO ---
         function init() {
             // Cập nhật UI Tên & Avatar
             document.getElementById('sidebarName').innerText = currentUser;
@@ -471,45 +446,83 @@
                 if(adminMenu) adminMenu.style.display = 'none';
             }
 
-            // Dark Mode
+            // Load Cài đặt
+            document.getElementById('langSelect').value = currentLang;
+            changeLanguage(currentLang);
+            
             if(localStorage.getItem('darkMode') === 'true') {
                 document.body.classList.add('dark-mode');
                 document.getElementById('darkModeToggle').checked = true;
             }
+            const savedBg = localStorage.getItem('modern_bg');
+            if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
 
             connectMQTT();
             updateTime();
             setInterval(updateTime, 1000);
         }
 
-        // --- 4. CÁC HÀM CHỨC NĂNG ---
+        // --- CÁC HÀM CÀI ĐẶT ---
+        function changeLanguage(lang) {
+            currentLang = lang; localStorage.setItem('lang', lang);
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerText = translations[lang][key];
+            });
+        }
+        function toggleDarkMode() { 
+            const d = document.getElementById('darkModeToggle').checked; 
+            if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); 
+            localStorage.setItem('darkMode', d); 
+        }
+        function changeBg(e) {
+            const file = e.target.files[0];
+            if(file){
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const bgData = evt.target.result;
+                    document.body.style.backgroundImage = `url('${bgData}')`;
+                    localStorage.setItem('modern_bg', bgData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function resetBg() {
+            localStorage.removeItem('modern_bg');
+            document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')";
+        }
+
+        // --- CÁC HÀM CHỨC NĂNG ---
         async function togglePump() {
             if (userRole !== 'admin') return;
             const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
             const action = isCurrentlyOn ? 'OFF' : 'ON';
             document.getElementById('pumpText').innerText = "Đang gửi...";
-            
             try {
-                const r = await fetch('/api/control-pump', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: currentUser, action })
-                });
-                const d = await r.json();
-                if (!d.success) alert("Lỗi: " + d.message);
+                const r = await fetch('/api/control-pump', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: currentUser, action }) });
+                const d = await r.json(); if (!d.success) alert("Lỗi: " + d.message);
             } catch(e) { alert("Lỗi kết nối Server!"); }
+        }
+
+        async function changePassword() {
+            const oldPass = document.getElementById('oldPass').value;
+            const newPass = document.getElementById('newPass').value;
+            if (!oldPass || !newPass) { alert("Vui lòng nhập đủ thông tin!"); return; }
+            if (newPass.length < 6) { alert("Mật khẩu mới quá ngắn!"); return; }
+            try {
+                const r = await fetch('/api/change-password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: currentUser, oldPassword: oldPass, newPassword: newPass }) });
+                const d = await r.json(); alert(d.message);
+                if(d.success) { document.getElementById('oldPass').value = ''; document.getElementById('newPass').value = ''; }
+            } catch(e) { alert("Lỗi kết nối server!"); }
         }
 
         async function loadUserList() {
             if (userRole !== 'admin') return;
-            const tbody = document.getElementById('userListBody');
-            tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+            const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
             try {
-                const res = await fetch('/api/list-users', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ requestBy: currentUser })
-                });
-                const data = await res.json();
-                tbody.innerHTML = '';
+                const res = await fetch('/api/list-users', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser }) });
+                const data = await res.json(); tbody.innerHTML = '';
                 if (data.success) {
                     data.users.forEach(u => {
                         let btn = `<button class="btn btn-primary" style="padding:5px; margin:0; font-size:12px;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
@@ -520,13 +533,9 @@
                 }
             } catch(e) {}
         }
-
         async function changeRole(target, newRole) {
             if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
-            await fetch('/api/set-user-role', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ requestBy: currentUser, targetUser: target, newRole })
-            });
+            await fetch('/api/set-user-role', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser, targetUser: target, newRole }) });
             loadUserList();
         }
 
@@ -535,17 +544,11 @@
             document.getElementById('tab-'+id).classList.add('active'); 
             if(el) { document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); }
         }
-
-        function logout() {
-            if(confirm("Đăng xuất?")) { localStorage.removeItem('currentUser'); localStorage.removeItem('userRole'); window.location.href='index.html'; }
-        }
-        function saveProfile() { localStorage.reload(); }
+        function logout() { if(confirm("Đăng xuất?")) { localStorage.removeItem('currentUser'); localStorage.removeItem('userRole'); window.location.href='index.html'; } }
+        function saveProfile() { location.reload(); }
         function selectAvatar(u, e) { localStorage.setItem('currentAvatar', u); document.querySelectorAll('.avatar-item').forEach(i=>i.classList.remove('selected')); e.classList.add('selected'); document.getElementById('previewAvatar').src=u; }
-        function toggleDarkMode() { const d = document.getElementById('darkModeToggle').checked; if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', d); }
+        function updateTime() { const now = new Date(); document.getElementById('clockDisplay').innerText = now.toLocaleTimeString(currentLang==='vi'?'vi-VN':'en-US',{hour12:false}); }
 
-        function updateTime() { const now = new Date(); document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('vi-VN',{hour12:false}); }
-
-        // MQTT
         function connectMQTT() {
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
@@ -562,11 +565,9 @@
             client.connect({ onSuccess: () => { client.subscribe(mqttTopic); document.getElementById('mqttStatus').className = 'iot-status connected'; document.getElementById('mqttText').innerText="Đã kết nối"; }, useSSL: true });
         }
 
-        // CHARTS
         var lineChart = new ApexCharts(document.querySelector("#lineChart"), { series: [{name:'Nước',data:[0]}], chart: {type:'area',height:250,toolbar:{show:false}}, stroke:{curve:'smooth'} }); lineChart.render();
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
 
-        // CHẠY
         init();
     </script>
 </body>
