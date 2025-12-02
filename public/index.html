@@ -6,20 +6,21 @@
     <style>
         body {
             margin: 0; padding: 0;
-            /* Ảnh nền hoạt hình đêm giống mẫu */
             background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh; display: flex; justify-content:  flex-end; align-items: center;
+            height: 100vh; 
+            display: flex; 
+            justify-content: flex-end; /* Căn phải */
+            align-items: center;
         }
 
-        /* KHUNG KÍNH - Giữ nguyên width: 320px như yêu cầu */
+        /* KHUNG KÍNH */
         .glass-box {
             width: 320px; 
-            padding: 40px 30px; /* Tăng padding chút cho thoáng */
-            margin-right: 10%; /* Điều chỉnh số này để di chuyển khung xa/gần lề phải hơn */
+            padding: 40px 30px;
+            margin-right: 10%; /* Cách lề phải 10% */
 
-            /* Hiệu ứng kính mờ sáng hơn giống mẫu */
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -30,7 +31,6 @@
             position: relative;
         }
         
-        /* Logo tròn */
         .logo-container {
             width: 80px; height: 80px;
             background: white;
@@ -39,103 +39,55 @@
             display: flex; justify-content: center; align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .logo-container img { width: 60px; }
+        .logo-container img { width: 60px; height: auto; }
 
-        /* Tiêu đề chính */
         h2 { 
-            margin: 0; 
-            font-weight: 800; 
-            font-size: 20px; /* Cỡ chữ vừa vặn */
-            color: #0056b3; /* Màu xanh đậm sang trọng */
-            text-transform: uppercase;
-            text-shadow: 0px 0px 10px rgba(255,255,255,0.8);
-            letter-spacing: 0.5px;
+            margin: 0; font-weight: 800; font-size: 20px;
+            color: #0056b3; text-transform: uppercase;
+            text-shadow: 0px 0px 10px rgba(255,255,255,0.8); letter-spacing: 0.5px;
         }
         
-        /* Câu slogan */
         .slogan {
-            margin: 10px 0 25px 0; 
-            font-size: 0.85em; 
-            color: #f0f0f0;
-            font-weight: 400;
-            line-height: 1.5;
+            margin: 10px 0 25px 0; font-size: 0.85em; color: #f0f0f0;
+            font-weight: 400; line-height: 1.5;
         }
 
-        /* Group chứa Input và Label */
-        .input-group {
-            text-align: left;
-            margin-bottom: 15px;
-            position: relative;
-        }
+        .input-group { text-align: left; margin-bottom: 15px; position: relative; }
         
         .input-label {
-            font-size: 13px;
-            margin-left: 15px;
-            margin-bottom: 5px;
-            display: block;
-            font-weight: 600;
-            color: #fff;
+            font-size: 13px; margin-left: 15px; margin-bottom: 5px;
+            display: block; font-weight: 600; color: #fff;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
-        /* Ô nhập liệu pill-shape */
         input {
-            width: 100%; 
-            padding: 12px 12px 12px 40px; /* Padding trái 40px để chừa chỗ cho Icon */
-            border: 2px solid rgba(255,255,255,0.5); 
-            border-radius: 50px; /* Bo tròn hoàn toàn */
-            outline: none;
-            background: rgba(255,255,255,0.95); 
-            box-sizing: border-box;
-            font-size: 14px;
-            color: #333;
-            transition: 0.3s;
+            width: 100%; padding: 12px 12px 12px 40px;
+            border: 2px solid rgba(255,255,255,0.5); border-radius: 50px;
+            outline: none; background: rgba(255,255,255,0.95); 
+            box-sizing: border-box; font-size: 14px; color: #333; transition: 0.3s;
         }
-        input:focus {
-            border-color: #0072ff;
-            background: #fff;
-        }
+        input:focus { border-color: #0072ff; background: #fff; }
 
-        /* Icon bên trong Input */
-        .icon {
-            position: absolute;
-            left: 15px;
-            top: 32px; /* Căn chỉnh theo vị trí label */
-            font-size: 16px;
-            color: #666;
-        }
-        /* Đổi màu icon khi focus vào ô nhập */
+        .icon { position: absolute; left: 15px; top: 32px; font-size: 16px; color: #666; }
         .input-group:focus-within .icon { color: #0072ff; }
 
-        /* Nút Đăng Nhập Xanh Dương */
         .btn-login {
             width: 100%; padding: 12px; margin-top: 10px;
             border: none; border-radius: 50px;
             background: linear-gradient(90deg, #0072ff 0%, #00c6ff 100%);
             color: white; font-weight: 700; font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
             transition: transform 0.2s;
         }
         .btn-login:hover { transform: scale(1.03); }
 
-        /* Footer Links - Căn giữa và xếp dọc */
         .footer-links {
-            margin-top: 25px;
-            font-size: 13px;
-            display: flex;
-            flex-direction: column; /* Xếp dọc */
-            align-items: center;    /* Căn giữa */
-            gap: 12px;              /* Khoảng cách giữa các dòng */
+            margin-top: 25px; font-size: 13px; display: flex;
+            flex-direction: column; align-items: center; gap: 12px;
         }
-        .footer-links a {
-            color: #fff; text-decoration: none; cursor: pointer; opacity: 0.9;
-        }
+        .footer-links a { color: #fff; text-decoration: none; cursor: pointer; opacity: 0.9; }
         .footer-links a:hover { text-decoration: underline; opacity: 1; font-weight: bold; }
-        
-        /* Màu chữ riêng cho dòng Đăng ký */
         .btn-register-text { color: #8ecae6 !important; font-weight: bold; font-size: 14px; }
-
     </style>
 </head>
 <body>
@@ -177,60 +129,67 @@
     </div>
 
     <script>
-        // Biến xác định đang ở chế độ nào
         let isLoginMode = true;
 
         function toggleMode() {
-            isLoginMode = !isLoginMode; // Đảo ngược trạng thái
+            isLoginMode = !isLoginMode;
             const emailGroup = document.getElementById('group-email');
             const title = document.getElementById('form-title');
             const btn = document.getElementById('btn-action');
             const toggleLink = document.querySelector('.btn-register-text');
+            const emailInput = document.getElementById('email');
 
             if (isLoginMode) {
-                // Chế độ Đăng Nhập
                 emailGroup.style.display = 'none';
                 title.innerText = "WELCOME SHADOWFOX";
                 btn.innerText = "ĐĂNG NHẬP";
                 toggleLink.innerText = "Chưa có tài khoản? Đăng ký ngay";
-                document.getElementById('email').required = false; // Bỏ bắt buộc email
+                emailInput.required = false;
             } else {
-                // Chế độ Đăng Ký
                 emailGroup.style.display = 'block';
                 title.innerText = "THAM GIA SHADOWFOX";
                 btn.innerText = "ĐĂNG KÝ";
                 toggleLink.innerText = "Đã có tài khoản? Đăng nhập";
-                document.getElementById('email').required = true; // Bắt buộc nhập email
+                emailInput.required = true;
             }
         }
 
         async function handleFormSubmit(event) {
-            event.preventDefault(); // Ngăn load lại trang
+            event.preventDefault(); 
             
             const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            const e = document.getElementById('email').value;
-            
-            // Xác định loại hành động dựa trên biến isLoginMode
             const type = isLoginMode ? 'login' : 'register';
 
-            // Logic gửi dữ liệu đi (giữ nguyên logic cũ của bạn)
-            console.log(`Đang gửi yêu cầu: ${type} cho user: ${u}`);
-            
-            // --- Phần code fetch giữ nguyên như cũ ---
+            // --- PHẦN XỬ LÝ CHUYỂN TRANG (QUAN TRỌNG) ---
             try {
-                // Giả lập logic kết nối server (URL phải có thật mới chạy được nhé)
-                // const url = type === 'login' ? '/login' : '/register';
-                // const res = await fetch(...) 
-                
-                // MÔ PHỎNG THÀNH CÔNG ĐỂ TEST GIAO DIỆN
+                // Giả lập độ trễ mạng 0.5s cho giống thật
+                const btn = document.getElementById('btn-action');
+                const originalText = btn.innerText;
+                btn.innerText = "Đang xử lý...";
+                btn.disabled = true;
+
                 setTimeout(() => {
-                   if(type === 'login') alert("Đăng nhập thành công! (Mô phỏng)");
-                   else alert("Đăng ký thành công! Vui lòng đăng nhập.");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+
+                    if(type === 'login') {
+                        // 1. Lưu tên người dùng
+                        localStorage.setItem('currentUser', u);
+                        
+                        // 2. Thông báo
+                        alert("Đăng nhập thành công! (Chuyển hướng...)");
+                        
+                        // 3. CHUYỂN HƯỚNG SANG DASHBOARD
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        alert("Đăng ký thành công! Vui lòng chuyển sang Đăng nhập.");
+                        toggleMode(); // Tự động chuyển về form đăng nhập
+                    }
                 }, 500);
 
             } catch (error) {
                 console.error(error);
+                alert("Có lỗi xảy ra!");
             }
         }
 
