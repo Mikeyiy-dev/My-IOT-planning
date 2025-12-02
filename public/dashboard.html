@@ -1,60 +1,568 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Dashboard</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShadowFox - Modern Dashboard</title>
+    
+    <!-- Icon & Font -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- THƯ VIỆN KẾT NỐI IOT (MQTT) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #9ca3af;
+            --sidebar-w: 260px;
+            --radius: 20px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background-color: var(--bg-body); 
+            background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; min-height: 100vh; color: var(--text-main);
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            height: 96vh; margin: 2vh; 
+            border-radius: var(--radius);
+            display: flex; flex-direction: column;
+            box-shadow: var(--shadow);
+            z-index: 100; border: 1px solid rgba(255,255,255,0.5);
+        }
+        
+        .logo-box {
+            padding: 25px 20px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .logo-img { width: 45px; height: auto; max-height: 45px; object-fit: contain; }
+        .logo-text h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
+        .logo-text span { font-size: 12px; color: var(--text-light); }
+
+        .menu { list-style: none; padding: 20px; flex: 1; }
+        .menu-item {
+            padding: 14px 16px; margin-bottom: 8px; border-radius: 12px;
+            display: flex; align-items: center; gap: 14px; color: var(--secondary);
+            cursor: pointer; transition: 0.2s; font-weight: 500; font-size: 15px;
+        }
+        .menu-item:hover { background: #f8fafc; color: var(--primary); }
+        .menu-item.active { 
+            background: var(--primary); color: white; font-weight: 600;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        .menu-item i { font-size: 22px; }
+
+        .user-footer {
+            padding: 20px; border-top: 1px solid #f1f5f9;
+            display: flex; align-items: center; gap: 12px; cursor: pointer;
+            transition: 0.2s;
+        }
+        .user-footer:hover { background: #f8fafc; border-radius: 0 0 var(--radius) var(--radius); }
+        .user-avatar { 
+            width: 40px; height: 40px; border-radius: 10px; object-fit: contain;
+            background: #f1f5f9; padding: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main { flex: 1; padding: 2vh 2vh 2vh 0; overflow-y: auto; height: 100vh; }
+        .content-container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px);
+            border-radius: var(--radius);
+            min-height: 96vh; padding: 30px;
+            box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5);
+            display: flex; flex-direction: column;
+        }
+
+        /* HEADER */
+        .top-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .greeting h2 { margin: 0; font-size: 24px; color: var(--text-main); }
+        .date-display { color: var(--text-light); font-size: 14px; margin-top: 5px; font-weight: 500; }
+        .clock-display {
+            font-size: 32px; font-weight: 700; color: var(--primary);
+            font-variant-numeric: tabular-nums;
+            background: rgba(255,255,255,0.5); padding: 5px 20px; border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* IOT STATUS BAR */
+        .iot-status {
+            font-size: 12px; padding: 5px 10px; border-radius: 20px; background: #eee; color: #666;
+            display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
+        }
+        .iot-status.connected { background: #d1fae5; color: #065f46; }
+        .iot-dot { width: 8px; height: 8px; background: #ccc; border-radius: 50%; }
+        .iot-status.connected .iot-dot { background: #10b981; box-shadow: 0 0 5px #10b981; }
+
+        /* TABS & GRID */
+        .tab-content { display: none; animation: fadeIn 0.4s ease; flex: 1; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+
+        /* CARDS & WIDGETS */
+        .card {
+            background: var(--bg-card); border-radius: 16px; padding: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+            margin-bottom: 25px; position: relative; overflow: hidden;
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .card-title i { color: var(--primary); font-size: 20px; }
+
+        .camera-container {
+            width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;
+            overflow: hidden; position: relative;
+        }
+        .camera-container img { width: 100%; height: 100%; object-fit: cover; }
+        .live-badge {
+            position: absolute; top: 12px; left: 12px;
+            background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 10px;
+            border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .live-badge::before { content:''; width: 6px; height: 6px; background: white; border-radius: 50%; }
+
+        .pump-card {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            padding: 40px 20px; transition: 0.3s; cursor: pointer; border: 2px solid transparent;
+        }
+        .pump-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .pump-icon {
+            width: 70px; height: 70px; background: var(--primary-light); color: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 32px; margin-bottom: 15px; transition: 0.3s;
+        }
+        .pump-card.active { border-color: var(--primary); background: #f0f7ff; }
+        .pump-card.active .pump-icon { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
+
+        .stat-value { font-size: 36px; font-weight: 700; color: var(--text-main); margin: 10px 0; }
+        .alert-box {
+            padding: 15px; border-radius: 12px; background: #ecfdf5; color: var(--success);
+            font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #d1fae5;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .alert-box.danger { background: #fef2f2; color: var(--danger); border-color: #fee2e2; }
+
+        .avatar-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
+        .avatar-item {
+            width: 70px; height: 70px; border-radius: 50%; padding: 10px; border: 3px solid #e2e8f0;
+            cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; background: #fff;
+        }
+        .avatar-item img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        .avatar-item:hover, .avatar-item.selected { border-color: var(--primary); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        .input-modern { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; margin-top: 10px; outline: none; transition: 0.2s; }
+        .input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+        .btn { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
+        .btn-primary:hover { background: #4338ca; }
+        .btn-danger { background: #fee2e2; color: var(--danger); width: 100%; margin-top: 10px; }
+        .btn-danger:hover { background: #fecaca; }
+
+        .upload-zone { display: block; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; color: var(--secondary); transition: 0.3s; background: #ffffff; }
+        .upload-zone:hover { border-color: var(--primary); background: #f8fafc; }
+
+        .modern-table { width: 100%; border-collapse: collapse; }
+        .modern-table th { text-align: left; padding: 16px; color: var(--text-light); font-weight: 600; border-bottom: 1px solid #e2e8f0; font-size: 13px; text-transform: uppercase; }
+        .modern-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); font-size: 14px; }
+        .tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .tag.ok { background: #ecfdf5; color: var(--success); }
+        .tag.warn { background: #fffbeb; color: var(--warning); }
+        .tag.err { background: #fef2f2; color: var(--danger); }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; } .logo-text, .menu-item span, .user-footer div { display: none; }
+            .menu-item { justify-content: center; padding: 14px; } .logo-box { justify-content: center; padding: 30px 0; }
+            .dashboard-grid { grid-template-columns: 1fr; } .top-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .clock-display { font-size: 24px; align-self: flex-end; }
+        }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: auto; height: auto; margin: 0; border-radius: 0; flex-direction: row; justify-content: space-between; padding: 10px; }
+            .menu { display: flex; padding: 0; } .main { padding: 0; height: auto; } .content-container { border-radius: 0; border: none; padding: 20px; }
+        }
     </style>
 </head>
 <body>
-    <h2 id="hello">Xin chào...</h2>
-    <div class="card">
-        <canvas id="myChart"></canvas>
-    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-box">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            <div class="logo-text">
+                <h3>ShadowFox</h3>
+                <span>IoT System</span>
+            </div>
+        </div>
+
+        <ul class="menu">
+            <li class="menu-item active" onclick="switchTab('home', this)"><i class='bx bx-grid-alt'></i> <span>Tổng quan</span></li>
+            <li class="menu-item" onclick="switchTab('camera', this)"><i class='bx bx-cctv'></i> <span>Camera</span></li>
+            <li class="menu-item" onclick="switchTab('logs', this)"><i class='bx bx-list-ul'></i> <span>Nhật ký</span></li>
+            <li class="menu-item" onclick="switchTab('account', this)"><i class='bx bx-user'></i> <span>Tài khoản</span></li>
+            <li class="menu-item" onclick="switchTab('settings', this)"><i class='bx bx-cog'></i> <span>Cài đặt</span></li>
+        </ul>
+
+        <div class="user-footer" onclick="switchTab('account', null)">
+            <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="user-avatar" id="sidebarAvatar">
+            <div>
+                <div style="font-weight: 600; font-size: 14px;" id="sidebarName">Judy Hopps</div>
+                <div style="font-size: 12px; color: #9ca3af;">Admin</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+        <div class="content-container">
+            
+            <!-- HEADER -->
+            <div class="top-header">
+                <div class="greeting">
+                    <h2>Xin chào, <span id="headerName" style="color: var(--primary);">Judy</span>! 👋</h2>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <p class="date-display" id="dateDisplay">Đang tải...</p>
+                        <div class="iot-status" id="mqttStatus"><div class="iot-dot"></div> <span id="mqttText">Ngắt kết nối</span></div>
+                    </div>
+                </div>
+                <div class="clock-display" id="clockDisplay">00:00:00</div>
+            </div>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-home" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="left-col">
+                        <div class="card" style="padding: 0; border: none; overflow: hidden;">
+                            <div class="camera-container">
+                                <div class="live-badge">● LIVE</div>
+                                <!-- THAY IP CAMERA CỦA BẠN VÀO ĐÂY (Ví dụ: http://192.168.1.10/stream) -->
+                                <img id="camStream1" src="https://images.unsplash.com/photo-1518386377785-132b4b443213?q=80&w=2670&auto=format&fit=crop">
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title"><i class='bx bx-line-chart'></i> Biểu đồ mực nước</span>
+                            </div>
+                            <div id="lineChart" style="min-height: 250px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="right-col">
+                        <div class="card" style="text-align: center;">
+                            <div class="card-title" style="justify-content: center; margin-bottom: 5px;">Mực nước hiện tại</div>
+                            <div id="gaugeChart" style="margin-top: -15px;"></div>
+                            <div class="stat-value" id="waterLevelText" style="color: var(--primary);">0%</div>
+                            <div id="statusAlert" class="alert-box">
+                                <i class='bx bx-loader-alt bx-spin'></i> Đang đợi dữ liệu...
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Điều khiển</div>
+                            
+                            <div id="btnPump" class="pump-card" onclick="togglePump()">
+                                <div class="pump-icon"><i class='bx bx-water'></i></div>
+                                <div>
+                                    <div style="font-weight: 600;">Máy Bơm</div>
+                                    <div style="font-size: 12px; color: var(--text-light);" id="pumpText">Đang Tắt</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--secondary);">
+                                    <span>Trạng thái Còi hú:</span>
+                                    <span style="font-weight: 600;" id="sirenText">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: CAMERA FULL -->
+            <div id="tab-camera" class="tab-content">
+                <div class="card" style="height: 75vh; padding: 0; overflow: hidden; background: #000;">
+                    <div class="camera-container" style="height: 100%; border-radius: 0;">
+                        <img id="camStream2" src="https://images.unsplash.com/photo-1518386377785-132b4b443213?q=80&w=2670&auto=format&fit=crop">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: LOGS -->
+            <div id="tab-logs" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class='bx bx-history'></i> Nhật ký hoạt động</span>
+                        <button class="btn" style="border: 1px solid #e2e8f0; padding: 8px 16px;">Xuất CSV</button>
+                    </div>
+                    <table class="modern-table">
+                        <thead><tr><th>Thời gian</th><th>Sự kiện</th><th>Chi tiết</th><th>Trạng thái</th></tr></thead>
+                        <tbody id="logBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: ACCOUNT -->
+            <div id="tab-account" class="tab-content">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <div class="card-header"><span class="card-title"><i class='bx bx-id-card'></i> Thông tin tài khoản</span></div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img id="previewAvatar" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: contain; border: 4px solid var(--primary-light); background: #f8fafc; padding: 10px;">
+                        <h2 style="margin-top: 10px;" id="previewName">Judy Hopps</h2>
+                        <span style="color: var(--text-light); font-size: 14px;">Administrator</span>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);">Chọn nhân vật đại diện:</label>
+                        <div class="avatar-grid">
+                            <div class="avatar-item selected" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616408.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616408.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616432.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616432.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/3069/3069172.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616430.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616430.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/2298/2298263.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/2298/2298263.png"></div>
+                            <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616487.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616487.png"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--secondary);">Tên hiển thị:</label>
+                        <input type="text" id="nameInput" class="input-modern" placeholder="Nhập tên của bạn">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveProfile()">Lưu thay đổi</button>
+                    <button class="btn btn-danger" onclick="logout()">Đăng xuất</button>
+                </div>
+            </div>
+
+            <!-- TAB 5: SETTINGS -->
+            <div id="tab-settings" class="tab-content">
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <div class="card-header"><span class="card-title"><i class='bx bx-image'></i> Hình nền giao diện</span></div>
+                    <input type="file" id="bgUpload" hidden onchange="changeBg(event)">
+                    <label for="bgUpload" class="upload-zone">
+                        <i class='bx bx-cloud-upload' style="font-size: 40px; color: var(--primary);"></i>
+                        <div style="margin-top: 10px; font-weight: 600;">Nhấn để tải ảnh lên</div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Hỗ trợ JPG, PNG (Max 5MB)</div>
+                    </label>
+                    <button class="btn" style="width: 100%; margin-top: 20px; background: #f1f5f9; color: var(--secondary);" onclick="resetBg()">Khôi phục mặc định</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
-        // 1. Kiểm tra đăng nhập
-        const currentUser = localStorage.getItem('myUser');
-        if(!currentUser) window.location.href = 'login.html';
-        document.getElementById('hello').innerText = "Xin chào: " + currentUser;
+        // 1. CLOCK & DATE
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('vi-VN', {hour12: false});
+            const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
+            const dateStr = now.toLocaleDateString('vi-VN', options);
+            document.getElementById('dateDisplay').innerText = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        }
+        setInterval(updateTime, 1000); updateTime();
 
-        // 2. Cấu hình biểu đồ
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Dữ liệu cảm biến',
-                    data: [],
-                    borderColor: 'blue',
-                    tension: 0.3
-                }]
+        // 2. MQTT SETUP (FIXED SSL)
+        const mqttHost = "broker.hivemq.com"; 
+        const mqttPort = 8884; // SSL Port
+        const mqttTopic = "shadowfox/system_data";
+        const mqttTopicCmd = "shadowfox/commands";
+        let client;
+
+        function connectMQTT() {
+            const clientId = "client-" + Math.random().toString(16).substr(2, 8);
+            client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
+
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+
+            client.connect({
+                onSuccess: onConnect,
+                onFailure: onFailure,
+                useSSL: true // Bật SSL để chạy trên HTTPS
+            });
+        }
+
+        function onConnect() {
+            console.log("MQTT Connected!");
+            document.getElementById('mqttStatus').className = 'iot-status connected';
+            document.getElementById('mqttText').innerText = "Đã kết nối IoT";
+            
+            client.subscribe(mqttTopic);
+            addLog("Hệ thống", "Đã kết nối Server IoT", "ok");
+        }
+
+        function onFailure(responseObject) {
+            console.log("MQTT Fail: " + responseObject.errorMessage);
+            document.getElementById('mqttStatus').className = 'iot-status';
+            document.getElementById('mqttText').innerText = "Mất kết nối";
+            setTimeout(connectMQTT, 5000); 
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("MQTT Lost: " + responseObject.errorMessage);
+                document.getElementById('mqttStatus').className = 'iot-status';
+                document.getElementById('mqttText').innerText = "Đang kết nối lại...";
+                setTimeout(connectMQTT, 5000);
             }
-        });
+        }
 
-        // 3. Nhận dữ liệu Real-time
-        const socket = io();
-        socket.on('sensor_data', (data) => {
-            // Chỉ hiển thị dữ liệu của đúng User này
-            // Topic dạng: demo_iot_vn_2025/TEN_USER/thietbi
-            if(data.topic.includes(`/${currentUser}/`)) {
-                
-                const time = new Date().toLocaleTimeString();
-                
-                // Đẩy data vào biểu đồ
-                if(chart.data.labels.length > 20) {
-                    chart.data.labels.shift();
-                    chart.data.datasets[0].data.shift();
+        function onMessageArrived(message) {
+            console.log("Data: " + message.payloadString);
+            try {
+                const data = JSON.parse(message.payloadString);
+                updateDashboard(data.waterLevel, data.isPumpOn, data.isSirenOn);
+            } catch (e) {
+                console.error("Lỗi phân tích JSON", e);
+            }
+        }
+
+        function sendCommand(cmd, value) {
+            if (client && client.isConnected()) {
+                const payload = JSON.stringify({ device: cmd, state: value });
+                const message = new Paho.MQTT.Message(payload);
+                message.destinationName = mqttTopicCmd;
+                client.send(message);
+                console.log("Sent: " + payload);
+            } else {
+                alert("Chưa kết nối thiết bị!");
+            }
+        }
+
+        connectMQTT();
+
+
+        // 3. UI LOGIC & CHARTS
+        let currentUser = localStorage.getItem('currentUser') || "Judy Hopps";
+        let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png";
+        updateProfileUI(currentUser, currentAvatar);
+        const savedBg = localStorage.getItem('modern_bg');
+        if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+
+        function updateProfileUI(name, avatar) {
+            document.getElementById('sidebarName').innerText = name;
+            document.getElementById('headerName').innerText = name;
+            document.getElementById('sidebarAvatar').src = avatar;
+            document.getElementById('previewName').innerText = name;
+            document.getElementById('previewAvatar').src = avatar;
+            document.getElementById('nameInput').value = name;
+        }
+
+        var chartOptions = {
+            series: [{ name: 'Mức nước', data: [] }],
+            chart: { type: 'area', height: 250, toolbar: { show: false }, fontFamily: 'Inter', animations: { enabled: false } },
+            colors: ['#4f46e5'], stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
+            dataLabels: { enabled: false }, xaxis: { labels: { show: false } }, yaxis: { max: 100, min: 0 }
+        };
+        var lineChart = new ApexCharts(document.querySelector("#lineChart"), chartOptions);
+        lineChart.render();
+
+        var gaugeOptions = {
+            series: [0], chart: { height: 250, type: 'radialBar', fontFamily: 'Inter' },
+            plotOptions: { radialBar: { hollow: { size: '60%' }, track: { background: '#f1f5f9' }, dataLabels: { show: false } } },
+            colors: ['#4f46e5'], stroke: { lineCap: 'round' }
+        };
+        var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), gaugeOptions);
+        gaugeChart.render();
+
+        // 4. UPDATE UI FUNCTION
+        let historyData = [20, 20, 20, 20, 20]; 
+
+        function updateDashboard(level, pumpStatus, sirenStatus) {
+            document.getElementById('waterLevelText').innerText = level + "%";
+            gaugeChart.updateSeries([level]);
+            
+            historyData.push(level);
+            if(historyData.length > 20) historyData.shift();
+            lineChart.updateSeries([{ data: historyData }]);
+
+            const alertBox = document.getElementById('statusAlert');
+            const sirenTxt = document.getElementById('sirenText');
+            
+            if (level > 80) {
+                alertBox.className = "alert-box danger";
+                alertBox.innerHTML = "<i class='bx bx-error-circle'></i> CẢNH BÁO NGẬP!";
+                gaugeChart.updateOptions({ colors: ['#ef4444'] });
+                if(sirenStatus) {
+                    sirenTxt.innerText = "ĐANG HÚ CÒI"; 
+                    sirenTxt.style.color = "#ef4444";
                 }
-                chart.data.labels.push(time);
-                chart.data.datasets[0].data.push(data.value);
-                chart.update();
+            } else {
+                alertBox.className = "alert-box";
+                alertBox.innerHTML = "<i class='bx bx-check-circle'></i> Hệ thống an toàn";
+                sirenTxt.innerText = "Im lặng"; 
+                sirenTxt.style.color = "#64748b";
+                gaugeChart.updateOptions({ colors: ['#4f46e5'] });
             }
-        });
+
+            const pumpCard = document.getElementById('btnPump');
+            const pumpText = document.getElementById('pumpText');
+            if (pumpStatus) {
+                pumpCard.classList.add('active');
+                pumpText.innerText = "Đang Hoạt Động";
+            } else {
+                pumpCard.classList.remove('active');
+                pumpText.innerText = "Đang Tắt";
+            }
+        }
+
+        // 5. CONTROLS
+        function togglePump() {
+            const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
+            const newState = !isCurrentlyOn;
+            sendCommand("pump", newState);
+            addLog("Người dùng", newState ? "Bật máy bơm" : "Tắt máy bơm", "ok");
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            if(el) {
+                document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                el.classList.add('active');
+            }
+        }
+        function addLog(source, detail, type) {
+            const tbody = document.getElementById('logBody');
+            const row = `<tr><td>${new Date().toLocaleTimeString()}</td><td>${source}</td><td>${detail}</td><td><span class="tag ${type}">${type==='ok'?'Info':(type==='err'?'Danger':'Warn')}</span></td></tr>`;
+            tbody.insertAdjacentHTML('afterbegin', row);
+            if(tbody.children.length > 8) tbody.removeChild(tbody.lastChild);
+        }
+        
+        let tempAvatar = currentAvatar;
+        function selectAvatar(url, el) { tempAvatar = url; document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected')); el.classList.add('selected'); document.getElementById('previewAvatar').src = url; }
+        function saveProfile() { const name = document.getElementById('nameInput').value; if(!name.trim()) return alert("Lỗi tên!"); currentUser = name; currentAvatar = tempAvatar; localStorage.setItem('currentUser', currentUser); localStorage.setItem('currentAvatar', currentAvatar); updateProfileUI(currentUser, currentAvatar); alert("Đã lưu!"); }
+        function logout() { if(confirm("Đăng xuất?")) { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; } }
+        function changeBg(e) { const file = e.target.files[0]; if(file){ const reader = new FileReader(); reader.onload = (evt) => { document.body.style.backgroundImage = `url('${evt.target.result}')`; try{localStorage.setItem('modern_bg', evt.target.result);}catch(e){} }; reader.readAsDataURL(file); } }
+        function resetBg() { localStorage.removeItem('modern_bg'); document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')"; }
+
+        addLog("System", "Dashboard initialized", "ok");
     </script>
 </body>
 </html>
