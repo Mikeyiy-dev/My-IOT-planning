@@ -9,38 +9,69 @@
             background: url('background.jpg') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            height: 100vh; display: flex; justify-content: flex-end; align-items: center;
+            height: 100vh; 
+            display: flex; 
+            justify-content: flex-end; /* Căn phải */
+            align-items: center;
         }
 
         /* KHUNG KÍNH */
         .glass-box {
-            width: 320px; padding: 40px 30px; margin-right: 10%;
+            width: 320px; 
+            padding: 40px 30px;
+            margin-right: 10%; /* Cách lề phải 10% */
+
             background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.4);
-            text-align: center; color: white; position: relative; transition: height 0.3s;
+            text-align: center; color: white;
+            position: relative;
         }
         
         .logo-container {
-            width: 80px; height: 80px; background: white; border-radius: 50%;
-            margin: 0 auto 15px auto; display: flex; justify-content: center; align-items: center;
+            width: 80px; height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+            display: flex; justify-content: center; align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
         .logo-container img { width: 60px; height: auto; }
 
-        h2 { margin: 0; font-weight: 800; font-size: 20px; color: #0056b3; text-transform: uppercase; letter-spacing: 0.5px; }
-        .slogan { margin: 10px 0 25px 0; font-size: 0.85em; color: #333; font-weight: 500; }
+        h2 { 
+            margin: 0; font-weight: 800; font-size: 20px;
+            color: #0056b3; text-transform: uppercase;
+            text-shadow: 0px 0px 10px rgba(255,255,255,0.8); letter-spacing: 0.5px;
+        }
+        
+        /* ĐÃ SỬA: Màu chữ Slogan giống màu chữ nhập trong Input (#333) */
+        .slogan {
+            margin: 10px 0 25px 0; 
+            font-size: 0.85em; 
+            color: #333; /* Màu đen xám */
+            font-weight: 500; 
+            line-height: 1.5;
+            text-shadow: none; /* Bỏ bóng để chữ nét hơn */
+        }
 
         .input-group { text-align: left; margin-bottom: 15px; position: relative; }
-        .input-label { font-size: 13px; margin-left: 15px; margin-bottom: 5px; display: block; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        
+        .input-label {
+            font-size: 13px; margin-left: 15px; margin-bottom: 5px;
+            display: block; font-weight: 600; color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
 
         input {
             width: 100%; padding: 12px 12px 12px 40px;
             border: 2px solid rgba(255,255,255,0.5); border-radius: 50px;
             outline: none; background: rgba(255,255,255,0.95); 
-            box-sizing: border-box; font-size: 14px; color: #333; transition: 0.3s;
+            box-sizing: border-box; font-size: 14px; 
+            color: #333; /* Màu chữ khi nhập */
+            transition: 0.3s;
         }
         input:focus { border-color: #0072ff; background: #fff; }
 
@@ -48,216 +79,158 @@
         .input-group:focus-within .icon { color: #0072ff; }
 
         .btn-login {
-            width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 50px;
+            width: 100%; padding: 12px; margin-top: 10px;
+            border: none; border-radius: 50px;
             background: linear-gradient(90deg, #0072ff 0%, #00c6ff 100%);
-            color: white; font-weight: 700; font-size: 16px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4); transition: transform 0.2s;
+            color: white; font-weight: 700; font-size: 16px;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            transition: transform 0.2s;
         }
         .btn-login:hover { transform: scale(1.03); }
 
-        .footer-links { margin-top: 25px; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .footer-links a { color: #333; text-decoration: none; cursor: pointer; font-weight: 500; }
-        .footer-links a:hover { text-decoration: underline; font-weight: bold; }
-        .btn-register-text { color: #0056b3 !important; font-weight: bold; font-size: 14px; }
-
-        /* Class ẩn hiện các form */
-        .hidden { display: none; }
+        .footer-links {
+            margin-top: 25px; font-size: 13px; display: flex;
+            flex-direction: column; align-items: center; gap: 12px;
+        }
+        
+        /* ĐÃ SỬA: Màu chữ Quên mật khẩu giống màu Slogan (#333) */
+        .footer-links a { 
+            color: #333; /* Màu đen xám */
+            text-decoration: none; 
+            cursor: pointer; 
+            opacity: 0.9;
+            text-shadow: none;
+            font-weight: 500;
+        }
+        .footer-links a:hover { text-decoration: underline; font-weight: bold; color: #000; }
+        
+        .btn-register-text { color: #0056b3 !important; font-weight: bold; font-size: 14px; text-shadow: none; }
     </style>
 </head>
 <body>
     <div class="glass-box">
-        <div class="logo-container"><img src="logo.png" alt="Logo"></div>
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo">
+        </div>
         
-        <h2 id="form-title">WELCOME SHADOWFOX</h2>
-        <p class="slogan" id="form-slogan">Truy cập hệ sinh thái IoT thông minh</p>
+        <h2 id="form-title">WELCOME TO SHADOWFOX</h2>
+        <p class="slogan">Truy cập hệ sinh thái IoT thông minh & bảo mật<br>Silent in operation - Powerful in data</p>
         
-        <!-- 1. FORM ĐĂNG NHẬP / ĐĂNG KÝ -->
-        <form id="authForm">
-            <!-- Email chỉ hiện khi Đăng ký -->
-            <div class="input-group hidden" id="group-email-reg">
-                <label class="input-label">Email</label><span class="icon">💌</span>
-                <input type="email" id="email-reg" placeholder="Nhập email xác thực">
+        <form id="authForm" onsubmit="handleFormSubmit(event)">
+            
+            <div class="input-group" id="group-email" style="display: none;">
+                <label class="input-label">Email</label>
+                <span class="icon">💌</span>
+                <input type="email" id="email" placeholder="Nhập email xác thực">
             </div>
 
-            <div class="input-group" id="group-user">
-                <label class="input-label">Tài khoản</label><span class="icon">🦊</span>
+            <div class="input-group">
+                <label class="input-label">Tài khoản</label>
+                <span class="icon">🦊</span>
                 <input type="text" id="username" placeholder="Tên đăng nhập" required>
             </div>
             
-            <div class="input-group" id="group-pass">
-                <label class="input-label">Mật khẩu</label><span class="icon">🗝️</span>
+            <div class="input-group">
+                <label class="input-label">Mật khẩu</label>
+                <span class="icon">🗝️</span>
                 <input type="password" id="password" placeholder="Mật khẩu bảo mật" required>
             </div>
             
-            <button type="submit" class="btn-login" id="btn-auth">ĐĂNG NHẬP</button>
+            <button type="submit" class="btn-login" id="btn-action">ĐĂNG NHẬP</button>
         </form>
         
-        <!-- 2. FORM QUÊN MẬT KHẨU - BƯỚC 1: NHẬP EMAIL -->
-        <form id="forgotFormStep1" class="hidden">
-            <div class="input-group">
-                <label class="input-label">Nhập Email của bạn</label><span class="icon">📧</span>
-                <input type="email" id="forgot-email" placeholder="example@gmail.com" required>
-            </div>
-            <button type="button" class="btn-login" onclick="sendOTP()">GỬI MÃ XÁC THỰC</button>
-        </form>
-
-        <!-- 3. FORM QUÊN MẬT KHẨU - BƯỚC 2: NHẬP OTP & PASS MỚI -->
-        <form id="forgotFormStep2" class="hidden">
-            <div class="input-group">
-                <label class="input-label">Mã OTP (Trong Email)</label><span class="icon">🔢</span>
-                <input type="text" id="otp-code" placeholder="6 chữ số" required>
-            </div>
-            <div class="input-group">
-                <label class="input-label">Mật khẩu mới</label><span class="icon">🔒</span>
-                <input type="password" id="new-password" placeholder="Nhập mật khẩu mới" required>
-            </div>
-            <button type="button" class="btn-login" onclick="resetPassword()">ĐỔI MẬT KHẨU</button>
-        </form>
-
-        <!-- LINKS CHUYỂN ĐỔI -->
-        <div class="footer-links" id="footer-links">
-            <a class="btn-register-text" id="link-toggle-mode" onclick="toggleMode()">Chưa có tài khoản? Đăng ký ngay</a>
-            <a id="link-forgot" onclick="showForgotUI()">Quên mật khẩu?</a>
-            <a id="link-back" class="hidden" onclick="showLoginUI()">← Quay lại Đăng nhập</a>
+        <div class="footer-links">
+            <a class="btn-register-text" onclick="toggleMode()">Chưa có tài khoản? Đăng ký ngay</a>
+            <a onclick="forgotPassword()">Quên mật khẩu?</a>
         </div>
     </div>
 
     <script>
-        let mode = 'login'; // 'login', 'register', 'forgot'
+        let isLoginMode = true;
 
-        // --- LOGIC CHUYỂN ĐỔI GIAO DIỆN ---
         function toggleMode() {
+            isLoginMode = !isLoginMode;
+            const emailGroup = document.getElementById('group-email');
             const title = document.getElementById('form-title');
-            const btn = document.getElementById('btn-auth');
-            const linkToggle = document.getElementById('link-toggle-mode');
-            const groupEmail = document.getElementById('group-email-reg');
+            const btn = document.getElementById('btn-action');
+            const toggleLink = document.querySelector('.btn-register-text');
+            const emailInput = document.getElementById('email');
 
-            if (mode === 'login') {
-                mode = 'register';
-                title.innerText = "THAM GIA SHADOWFOX";
-                btn.innerText = "ĐĂNG KÝ";
-                linkToggle.innerText = "Đã có tài khoản? Đăng nhập";
-                groupEmail.classList.remove('hidden');
-            } else {
-                mode = 'login';
+            if (isLoginMode) {
+                emailGroup.style.display = 'none';
                 title.innerText = "WELCOME SHADOWFOX";
                 btn.innerText = "ĐĂNG NHẬP";
-                linkToggle.innerText = "Chưa có tài khoản? Đăng ký ngay";
-                groupEmail.classList.add('hidden');
+                toggleLink.innerText = "Chưa có tài khoản? Đăng ký ngay";
+                emailInput.required = false;
+            } else {
+                emailGroup.style.display = 'block';
+                title.innerText = "THAM GIA SHADOWFOX";
+                btn.innerText = "ĐĂNG KÝ";
+                toggleLink.innerText = "Đã có tài khoản? Đăng nhập";
+                emailInput.required = true;
             }
         }
 
-        function showForgotUI() {
-            mode = 'forgot';
-            document.getElementById('form-title').innerText = "KHÔI PHỤC MẬT KHẨU";
-            document.getElementById('authForm').classList.add('hidden');
-            document.getElementById('footer-links').querySelector('#link-toggle-mode').classList.add('hidden');
-            document.getElementById('footer-links').querySelector('#link-forgot').classList.add('hidden');
-            document.getElementById('footer-links').querySelector('#link-back').classList.remove('hidden');
+        async function handleFormSubmit(event) {
+            event.preventDefault(); 
             
-            // Hiện bước 1
-            document.getElementById('forgotFormStep1').classList.remove('hidden');
-            document.getElementById('forgotFormStep2').classList.add('hidden');
-        }
-
-        function showLoginUI() {
-            mode = 'login';
-            document.getElementById('form-title').innerText = "WELCOME SHADOWFOX";
-            document.getElementById('authForm').classList.remove('hidden');
-            document.getElementById('forgotFormStep1').classList.add('hidden');
-            document.getElementById('forgotFormStep2').classList.add('hidden');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const endpoint = isLoginMode ? '/login' : '/register';
             
-            document.getElementById('footer-links').querySelector('#link-toggle-mode').classList.remove('hidden');
-            document.getElementById('footer-links').querySelector('#link-forgot').classList.remove('hidden');
-            document.getElementById('footer-links').querySelector('#link-back').classList.add('hidden');
-            
-            // Reset về trạng thái login
-            document.getElementById('group-email-reg').classList.add('hidden');
-            document.getElementById('btn-auth').innerText = "ĐĂNG NHẬP";
-            document.getElementById('link-toggle-mode').innerText = "Chưa có tài khoản? Đăng ký ngay";
-        }
-
-        // --- XỬ LÝ ĐĂNG NHẬP / ĐĂNG KÝ ---
-        document.getElementById('authForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            const email = document.getElementById('email-reg').value;
-            
-            const endpoint = mode === 'login' ? '/login' : '/register';
-            const payload = mode === 'login' ? { username: u, password: p } : { username: u, password: p, email: email };
-
-            const btn = document.getElementById('btn-auth');
-            btn.innerText = "Đang xử lý..."; btn.disabled = true;
+            // Chuẩn bị dữ liệu gửi lên Server
+            const payload = isLoginMode ? { username, password } : { username, password, email };
 
             try {
-                const res = await fetch(endpoint, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                const btn = document.getElementById('btn-action');
+                btn.innerText = "Đang xử lý...";
+                btn.disabled = true;
+
+                // GỌI API LÊN SERVER THẬT
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const data = await res.json();
                 
-                if(data.success) {
-                    if(mode === 'login') {
+                const data = await response.json();
+                btn.disabled = false;
+                btn.innerText = isLoginMode ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
+
+                if (data.success) {
+                    if (isLoginMode) {
+                        // QUAN TRỌNG: Lưu Role server trả về vào máy
                         localStorage.setItem('currentUser', data.username);
-                        localStorage.setItem('userRole', data.role);
+                        localStorage.setItem('userRole', data.role); // <-- Role admin hay viewer ở đây
+                        
+                        alert("Đăng nhập thành công!");
                         window.location.href = 'dashboard.html';
                     } else {
-                        alert(data.message);
-                        showLoginUI(); // Chuyển về đăng nhập
+                        alert("Đăng ký thành công! Hãy đăng nhập ngay.");
+                        toggleMode();
                     }
                 } else {
-                    alert(data.message);
+                    alert("LỖI: " + data.message);
                 }
-            } catch(err) { alert("Lỗi kết nối server!"); }
-            btn.innerText = mode === 'login' ? "ĐĂNG NHẬP" : "ĐĂNG KÝ"; btn.disabled = false;
-        });
 
-        // --- XỬ LÝ GỬI OTP ---
-        async function sendOTP() {
-            const email = document.getElementById('forgot-email').value;
-            if(!email) return alert("Vui lòng nhập Email!");
-
-            const btn = document.querySelector('#forgotFormStep1 button');
-            btn.innerText = "Đang gửi..."; btn.disabled = true;
-
-            try {
-                const res = await fetch('/forgot-password', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                alert(data.message);
-
-                if(data.success) {
-                    // Chuyển sang bước 2
-                    document.getElementById('forgotFormStep1').classList.add('hidden');
-                    document.getElementById('forgotFormStep2').classList.remove('hidden');
-                }
-            } catch(err) { alert("Lỗi kết nối!"); }
-            btn.innerText = "GỬI MÃ XÁC THỰC"; btn.disabled = false;
+            } catch (error) {
+                console.error(error);
+                alert("Không kết nối được tới Server!");
+            }
         }
 
-        // --- XỬ LÝ ĐỔI MẬT KHẨU MỚI ---
-        async function resetPassword() {
-            const email = document.getElementById('forgot-email').value;
-            const otp = document.getElementById('otp-code').value;
-            const newPass = document.getElementById('new-password').value;
-
-            if(!otp || !newPass) return alert("Vui lòng nhập đủ thông tin!");
-
-            try {
-                const res = await fetch('/reset-password-otp', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, otp, newPassword: newPass })
-                });
-                const data = await res.json();
-                alert(data.message);
-
-                if(data.success) {
-                    showLoginUI(); // Quay về đăng nhập
-                }
-            } catch(err) { alert("Lỗi kết nối!"); }
+        function forgotPassword() {
+            const email = prompt("Nhập email đăng ký của bạn:");
+            if(email) {
+                fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email})
+                })
+                .then(res => res.json())
+                .then(data => alert(data.message));
+            }
         }
     </script>
 </body>
