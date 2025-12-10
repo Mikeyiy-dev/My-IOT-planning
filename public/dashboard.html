@@ -414,7 +414,7 @@
     <script>
         // --- 1. CẤU HÌNH ---
         const mqttHost = "broker.hivemq.com"; 
-        const mqttPort = 8884;
+        const mqttPort = 8000; // Đã sửa thành cổng 8000 (WebSocket)
         const mqttTopic = "shadowfox/system_data";
         
         let client = null;
@@ -562,9 +562,14 @@
             const action = isCurrentlyOn ? 'OFF' : 'ON';
             document.getElementById('pumpText').innerText = "Đang gửi...";
             try {
-                const r = await fetch('/api/control-pump', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: currentUser, action }) });
-                const d = await r.json(); if (!d.success) alert("Lỗi: " + d.message);
-            } catch(e) { alert("Lỗi kết nối Server!"); }
+                // Giả lập gửi lệnh (hoặc kết nối backend thật nếu có)
+                // const r = await fetch('/api/control-pump', ...);
+                // Vì demo frontend nên gửi trực tiếp qua MQTT nếu cần
+                const message = new Paho.MQTT.Message(action);
+                message.destinationName = "shadowfox/commands";
+                client.send(message);
+                console.log("Đã gửi lệnh bơm:", action);
+            } catch(e) { alert("Lỗi gửi lệnh!"); }
         }
 
         async function changePassword() {
@@ -636,20 +641,70 @@
         function connectMQTT() {
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
+            
+            // --- HÀM XỬ LÝ KHI CÓ TIN NHẮN TỪ ESP32 ---
             client.onMessageArrived = (msg) => {
                 try { 
                     const data = JSON.parse(msg.payloadString);
+                    console.log("Data:", data);
+
+                    // 1. Cập nhật Mực nước
                     document.getElementById('waterLevelText').innerText = data.waterLevel + "%";
                     gaugeChart.updateSeries([data.waterLevel]);
+
+                    // 2. Cập nhật Biểu đồ đường
+                    const now = new Date().toLocaleTimeString();
+                    lineChart.appendData([{
+                        data: [{ x: now, y: data.waterLevel }]
+                    }]);
+
+                    // 3. Cập nhật Trạng thái Bơm
                     const btn = document.getElementById('btnPump');
-                    if(data.isPumpOn) { btn.classList.add('active'); if(userRole==='admin') document.getElementById('pumpText').innerText="ĐANG CHẠY"; }
-                    else { btn.classList.remove('active'); if(userRole==='admin') document.getElementById('pumpText').innerText="ĐANG TẮT"; }
-                } catch(e){}
+                    const txtPump = document.getElementById('pumpText');
+                    
+                    if(data.isPumpOn) { 
+                        btn.classList.add('active'); 
+                        if(userRole === 'admin') txtPump.innerText = "ĐANG CHẠY"; 
+                    } else { 
+                        btn.classList.remove('active'); 
+                        if(userRole === 'admin') txtPump.innerText = "ĐANG TẮT"; 
+                    }
+
+                    // 4. Cập nhật Cảnh báo & Còi
+                    const alertBox = document.getElementById('statusAlert');
+                    const sirenTxt = document.getElementById('sirenText');
+
+                    if (data.isSirenOn) {
+                        alertBox.className = 'alert-box danger';
+                        alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!";
+                        sirenTxt.innerText = "ĐANG KÊU 🔊";
+                        sirenTxt.style.color = "#ef4444";
+                        sirenTxt.style.fontWeight = "bold";
+                    } else {
+                        alertBox.className = 'alert-box';
+                        alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn";
+                        sirenTxt.innerText = "Im lặng";
+                        sirenTxt.style.color = "var(--secondary)";
+                    }
+
+                } catch(e){ console.error("Lỗi MQTT:", e); }
             };
-            client.connect({ onSuccess: () => { client.subscribe(mqttTopic); document.getElementById('mqttStatus').className = 'iot-status connected'; document.getElementById('mqttText').innerText="Đã kết nối"; }, useSSL: true });
+
+            client.connect({ onSuccess: () => { 
+                client.subscribe(mqttTopic); 
+                document.getElementById('mqttStatus').className = 'iot-status connected'; 
+                document.getElementById('mqttText').innerText="Đã kết nối"; 
+            }, useSSL: false }); // Tắt SSL để chạy port 8000
         }
 
-        var lineChart = new ApexCharts(document.querySelector("#lineChart"), { series: [{name:'Nước',data:[0]}], chart: {type:'area',height:250,toolbar:{show:false}}, stroke:{curve:'smooth'} }); lineChart.render();
+        var lineChart = new ApexCharts(document.querySelector("#lineChart"), { 
+            series: [{name:'Nước',data:[]}], // Data rỗng ban đầu
+            chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, 
+            stroke:{curve:'smooth'},
+            xaxis: { type: 'category', range: 10 } // Giới hạn hiển thị 10 điểm
+        }); 
+        lineChart.render();
+        
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
 
         init();
