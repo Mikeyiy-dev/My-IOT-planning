@@ -414,7 +414,7 @@
     <script>
         // --- 1. CẤU HÌNH ---
         const mqttHost = "broker.hivemq.com"; 
-        const mqttPort = 8000; // Đã sửa thành cổng 8000 (WebSocket)
+        const mqttPort = 8884; // Cổng WSS để chạy trên Render (HTTPS)
         const mqttTopic = "shadowfox/system_data";
         
         let client = null;
@@ -562,14 +562,12 @@
             const action = isCurrentlyOn ? 'OFF' : 'ON';
             document.getElementById('pumpText').innerText = "Đang gửi...";
             try {
-                // Giả lập gửi lệnh (hoặc kết nối backend thật nếu có)
-                // const r = await fetch('/api/control-pump', ...);
-                // Vì demo frontend nên gửi trực tiếp qua MQTT nếu cần
+                // Gửi lệnh ON/OFF qua MQTT tới ESP32
                 const message = new Paho.MQTT.Message(action);
                 message.destinationName = "shadowfox/commands";
                 client.send(message);
                 console.log("Đã gửi lệnh bơm:", action);
-            } catch(e) { alert("Lỗi gửi lệnh!"); }
+            } catch(e) { alert("Lỗi kết nối MQTT, không gửi được lệnh!"); }
         }
 
         async function changePassword() {
@@ -642,7 +640,7 @@
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
             
-            // --- HÀM XỬ LÝ KHI CÓ TIN NHẮN TỪ ESP32 ---
+            // --- HÀM XỬ LÝ KHI CÓ TIN NHẮN TỪ ESP32 (ĐÃ UPDATE) ---
             client.onMessageArrived = (msg) => {
                 try { 
                     const data = JSON.parse(msg.payloadString);
@@ -690,18 +688,26 @@
                 } catch(e){ console.error("Lỗi MQTT:", e); }
             };
 
-            client.connect({ onSuccess: () => { 
-                client.subscribe(mqttTopic); 
-                document.getElementById('mqttStatus').className = 'iot-status connected'; 
-                document.getElementById('mqttText').innerText="Đã kết nối"; 
-            }, useSSL: false }); // Tắt SSL để chạy port 8000
+            // Kết nối với useSSL: true (Bắt buộc cho Render/HTTPS)
+            client.connect({ 
+                onSuccess: () => { 
+                    client.subscribe(mqttTopic); 
+                    document.getElementById('mqttStatus').className = 'iot-status connected'; 
+                    document.getElementById('mqttText').innerText="Đã kết nối"; 
+                }, 
+                onFailure: (e) => {
+                    console.log("Lỗi kết nối:", e);
+                    document.getElementById('mqttText').innerText="Lỗi kết nối";
+                },
+                useSSL: true 
+            }); 
         }
 
         var lineChart = new ApexCharts(document.querySelector("#lineChart"), { 
-            series: [{name:'Nước',data:[]}], // Data rỗng ban đầu
+            series: [{name:'Nước',data:[]}], 
             chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, 
             stroke:{curve:'smooth'},
-            xaxis: { type: 'category', range: 10 } // Giới hạn hiển thị 10 điểm
+            xaxis: { type: 'category', range: 10 } 
         }); 
         lineChart.render();
         
