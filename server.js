@@ -1,4 +1,4 @@
-// server.js - Đã nâng cấp bảo mật JWT & Dotenv
+// server.js - Đã nâng cấp: Lưu lịch sử & Xuất Excel
 require('dotenv').config(); // Load bảo mật từ file .env
 const express = require('express');
 const app = express();
@@ -9,11 +9,11 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
-const jwt = require('jsonwebtoken'); // Thư viện mới
+const jwt = require('jsonwebtoken');
 
 // --- CẤU HÌNH ---
 const SUPER_ADMIN = "Mikeyiy"; 
-const JWT_SECRET = process.env.JWT_SECRET; // Lấy từ .env
+const JWT_SECRET = process.env.JWT_SECRET; 
 
 // --- GỬI EMAIL ---
 const transporter = nodemailer.createTransport({
@@ -26,6 +26,7 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ MongoDB OK!"))
     .catch(err => console.log("❌ Lỗi DB:", err));
 
+// 1. Schema User (Tài khoản)
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -35,28 +36,68 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
+// 2. Schema SensorData (Lưu lịch sử cảm biến - MỚI)
+const SensorSchema = new mongoose.Schema({
+    timestamp: { type: Date, default: Date.now }, // Thời gian ghi
+    waterLevel: Number,                           // Mực nước (%)
+    isPumpOn: Boolean,                            // Bơm bật hay tắt
+    isSirenOn: Boolean                            // Còi bật hay tắt
+});
+const SensorData = mongoose.model('SensorData', SensorSchema);
+
 app.use(express.static('public'));
 app.use(bodyParser.json());
 
 // --- MQTT ---
 const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
-const TOPIC_ROOT = 'demo_iot_vn_2025'; 
-const TOPIC_CMD = 'shadowfox/commands';
-mqttClient.on('connect', () => { mqttClient.subscribe(`${TOPIC_ROOT}/+/+`); });
-mqttClient.on('message', (topic, message) => io.emit('sensor_data', { topic, value: message.toString() }));
+const TOPIC_DATA = 'shadowfox/system_data'; // Topic dữ liệu cảm biến
+const TOPIC_CMD = 'shadowfox/commands';     // Topic điều khiển
 
-// --- MIDDLEWARE BẢO MẬT (QUAN TRỌNG NHẤT) ---
-// Hàm này chặn mọi request không có Token hợp lệ
+mqttClient.on('connect', () => { 
+    // Đăng ký nhận tin từ cả topic dữ liệu và các topic khác nếu cần
+    mqttClient.subscribe(TOPIC_DATA); 
+    console.log("✅ Đã kết nối MQTT và lắng nghe:", TOPIC_DATA);
+});
+
+// XỬ LÝ KHI NHẬN TIN NHẮN MQTT
+mqttClient.on('message', async (topic, message) => {
+    const msgString = message.toString();
+    
+    // 1. Gửi ngay cho Frontend qua Socket (để vẽ biểu đồ realtime)
+    io.emit('sensor_data', { topic, value: msgString });
+
+    // 2. LƯU VÀO DATABASE (Phần mới thêm)
+    if (topic === TOPIC_DATA) {
+        try {
+            const data = JSON.parse(msgString);
+            
+            // Tạo bản ghi mới
+            const newRecord = new SensorData({
+                waterLevel: data.waterLevel,
+                isPumpOn: data.isPumpOn,
+                isSirenOn: data.isSirenOn
+            });
+
+            // Lưu vào MongoDB
+            await newRecord.save();
+            // console.log(`💾 Đã lưu: Nước ${data.waterLevel}%`); 
+        } catch (e) {
+            console.error("❌ Lỗi lưu dữ liệu cảm biến:", e.message);
+        }
+    }
+});
+
+// --- MIDDLEWARE BẢO MẬT ---
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Lấy token từ header "Bearer <token>"
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) return res.status(401).json({ success: false, message: "Thiếu Token đăng nhập!" });
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ success: false, message: "Token không hợp lệ hoặc hết hạn!" });
-        req.user = user; // Lưu thông tin người dùng đã giải mã vào biến req.user
-        next(); // Cho phép đi tiếp
+        if (err) return res.status(403).json({ success: false, message: "Token không hợp lệ!" });
+        req.user = user;
+        next();
     });
 }
 
@@ -79,19 +120,15 @@ app.post('/login', async (req, res) => {
         return res.json({ success: false, message: "Sai tài khoản/mật khẩu!" });
 
     const finalRole = (username === SUPER_ADMIN) ? 'admin' : user.role;
-
-    // TẠO TOKEN: Gói tên và quyền vào trong Token
     const token = jwt.sign({ username: user.username, role: finalRole }, JWT_SECRET, { expiresIn: '24h' });
     
-    // Trả về Token cho Client
     res.json({ success: true, username: user.username, role: finalRole, token: token });
 });
 
-// --- CÁC API CẦN BẢO MẬT (Dùng middleware authenticateToken) ---
+// --- CÁC API BẢO MẬT ---
 
 // 1. Lấy danh sách user
 app.post('/api/list-users', authenticateToken, async (req, res) => {
-    // Bây giờ ta kiểm tra quyền từ Token (req.user), KHÔNG tin body nữa
     if (req.user.role !== 'admin' && req.user.username !== SUPER_ADMIN) 
         return res.json({ success: false, message: "Không có quyền!" });
 
@@ -102,23 +139,20 @@ app.post('/api/list-users', authenticateToken, async (req, res) => {
 // 2. Đổi quyền
 app.post('/api/set-user-role', authenticateToken, async (req, res) => {
     const { targetUser, newRole } = req.body;
-    const requestBy = req.user.username; // Lấy tên người yêu cầu từ Token an toàn
+    const requestBy = req.user.username;
 
     if (req.user.role !== 'admin' && requestBy !== SUPER_ADMIN) 
         return res.json({ success: false, message: "Không có quyền!" });
-
     if (targetUser === SUPER_ADMIN) 
         return res.json({ success: false, message: "Không thể hạ bệ VUA!" });
 
     await User.updateOne({ username: targetUser }, { role: newRole });
-    console.log(`👑 ${requestBy} đã đổi quyền của ${targetUser} thành ${newRole}`);
     res.json({ success: true, message: "Cập nhật thành công!" });
 });
 
 // 3. API Bơm
 app.post('/api/control-pump', authenticateToken, async (req, res) => {
     const { action } = req.body;
-    // Kiểm tra quyền từ Token
     if (req.user.role === 'admin' || req.user.username === SUPER_ADMIN) {
         mqttClient.publish(TOPIC_CMD, JSON.stringify({ device: 'pump', state: action === 'ON' }));
         res.json({ success: true, message: "Thành công" });
@@ -130,18 +164,13 @@ app.post('/api/control-pump', authenticateToken, async (req, res) => {
 // 4. Xóa User
 app.post('/api/delete-user', authenticateToken, async (req, res) => {
     const { targetUser } = req.body;
-    const requestBy = req.user.username; // Lấy từ Token
+    const requestBy = req.user.username;
 
-    if (requestBy !== SUPER_ADMIN) {
-        return res.json({ success: false, message: "Chỉ Super Admin mới được xóa!" });
-    }
-    if (targetUser === SUPER_ADMIN) {
-        return res.json({ success: false, message: "Không thể xóa chính mình!" });
-    }
+    if (requestBy !== SUPER_ADMIN) return res.json({ success: false, message: "Chỉ Super Admin mới được xóa!" });
+    if (targetUser === SUPER_ADMIN) return res.json({ success: false, message: "Không thể xóa chính mình!" });
 
     try {
         await User.deleteOne({ username: targetUser });
-        console.log(`❌ ${requestBy} đã xóa user: ${targetUser}`);
         res.json({ success: true, message: `Đã xóa tài khoản ${targetUser}!` });
     } catch (e) {
         res.json({ success: false, message: "Lỗi Database" });
@@ -151,11 +180,10 @@ app.post('/api/delete-user', authenticateToken, async (req, res) => {
 // 5. Đổi mật khẩu
 app.post('/api/change-password', authenticateToken, async (req, res) => {
     const { oldPassword, newPassword } = req.body;
-    const username = req.user.username; // Chỉ đổi được cho chính mình (từ Token)
+    const username = req.user.username;
 
     const user = await User.findOne({ username });
     if (!user) return res.json({ success: false, message: "Lỗi user" });
-
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) return res.json({ success: false, message: "Mật khẩu cũ sai!" });
 
@@ -164,7 +192,23 @@ app.post('/api/change-password', authenticateToken, async (req, res) => {
     res.json({ success: true, message: "Đổi mật khẩu thành công!" });
 });
 
-// API Quên mật khẩu giữ nguyên (hoặc nâng cấp sau)
-app.post('/forgot-password', async (req, res) => { /* Code cũ... */ });
+// 6. API Lấy lịch sử dữ liệu (MỚI - Cho chức năng Export)
+app.post('/api/sensor-history', authenticateToken, async (req, res) => {
+    try {
+        // Lấy 500 dòng dữ liệu mới nhất, sắp xếp từ mới đến cũ
+        const history = await SensorData.find().sort({ timestamp: -1 }).limit(500);
+        res.json({ success: true, data: history });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ success: false, message: "Lỗi lấy dữ liệu Server" });
+    }
+});
 
-http.listen(3000, () => console.log('🚀 Server running with JWT Security...'));
+// API Quên mật khẩu (Giữ nguyên logic cũ nếu có)
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    // Logic gửi email reset pass ở đây (nếu bạn có code cũ thì paste lại vào đây)
+    res.json({ success: false, message: "Tính năng đang bảo trì" }); 
+});
+
+http.listen(3000, () => console.log('🚀 Server running with Sensor History...'));

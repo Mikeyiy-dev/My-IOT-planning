@@ -291,7 +291,7 @@
             <div id="tab-logs" class="tab-content">
                 <div class="card">
                     <div class="card-header"><span class="card-title"><i class='bx bx-history'></i> <span data-i18n="logs.title">Nhật ký hoạt động</span></span>
-                    <button class="btn" style="border: 1px solid #e2e8f0; padding: 8px 16px;">Export CSV</button></div>
+                    <button class="btn" style="border: 1px solid #e2e8f0; padding: 8px 16px;" onclick="exportData()">Export Excel/TXT</button></div>
                     <table class="modern-table">
                         <thead><tr>
                             <th data-i18n="table.time">Thời gian</th>
@@ -779,6 +779,77 @@
         lineChart.render();
         
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
+
+        // --- MỚI THÊM: HÀM XUẤT DỮ LIỆU ---
+        async function exportData() {
+            const type = prompt("Bạn muốn xuất file gì?\nNhập 'csv' để xuất Excel\nNhập 'txt' để xuất file văn bản", "csv");
+            if (type !== 'csv' && type !== 'txt') return;
+
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Đang tải...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetchWithAuth('/api/sensor-history', { method: 'POST' });
+                if (!res) return;
+
+                const responseData = await res.json();
+                if (!responseData.success) {
+                    alert("Lỗi server: " + responseData.message);
+                    return;
+                }
+
+                const dataList = responseData.data;
+                if (!dataList || dataList.length === 0) {
+                    alert("Chưa có dữ liệu lịch sử nào!");
+                    return;
+                }
+
+                let fileContent = "";
+                let fileName = `Sensor_Log_${new Date().getTime()}`;
+                let mimeType = "";
+
+                if (type === 'csv') {
+                    // Thêm BOM (\uFEFF) để Excel nhận dạng tiếng Việt
+                    fileContent = "\uFEFFThời gian,Mực nước (%),Máy bơm,Còi báo động\n"; 
+                    dataList.forEach(item => {
+                        const time = new Date(item.timestamp).toLocaleString('vi-VN');
+                        const pump = item.isPumpOn ? "ĐANG CHẠY" : "TẮT";
+                        const siren = item.isSirenOn ? "KÊU" : "Tắt";
+                        fileContent += `"${time}",${item.waterLevel},${pump},${siren}\n`;
+                    });
+                    fileName += ".csv";
+                    mimeType = "text/csv;charset=utf-8;";
+                } else {
+                    fileContent = "=== NHẬT KÝ HOẠT ĐỘNG HỆ THỐNG SHADOWFOX ===\n\n";
+                    dataList.forEach(item => {
+                        const time = new Date(item.timestamp).toLocaleString('vi-VN');
+                        fileContent += `[${time}] Mực nước: ${item.waterLevel}% | Bơm: ${item.isPumpOn ? 'ON' : 'OFF'} | Còi: ${item.isSirenOn ? 'ON' : 'OFF'}\n`;
+                    });
+                    fileName += ".txt";
+                    mimeType = "text/plain;charset=utf-8;";
+                }
+
+                const blob = new Blob([fileContent], { type: mimeType });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                alert("Đã xuất file thành công!");
+
+            } catch (e) {
+                console.error(e);
+                alert("Lỗi khi xuất dữ liệu!");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
 
         init();
     </script>
