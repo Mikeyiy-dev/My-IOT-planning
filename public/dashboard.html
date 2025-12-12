@@ -420,6 +420,34 @@
         let client = null;
         let lastLevel = 0; let lastPump = false; let lastSiren = false;
         
+        // --- MIDDLEWARE BẢO MẬT: GỌI API KÈM TOKEN ---
+        async function fetchWithAuth(url, options = {}) {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert("Phiên đăng nhập hết hạn hoặc chưa đăng nhập!");
+                window.location.href = 'index.html';
+                return null;
+            }
+
+            if (!options.headers) options.headers = {};
+            options.headers['Authorization'] = 'Bearer ' + token;
+            options.headers['Content-Type'] = 'application/json';
+
+            try {
+                const res = await fetch(url, options);
+                if (res.status === 401 || res.status === 403) {
+                    alert("Hết phiên làm việc, vui lòng đăng nhập lại!");
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                    return null;
+                }
+                return res;
+            } catch (err) {
+                alert("Lỗi kết nối Server!");
+                return null;
+            }
+        }
+
         // --- 2. HỆ THỐNG NGÔN NGỮ (Full) ---
         const translations = {
             vi: {
@@ -555,40 +583,64 @@
             document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')";
         }
 
-        // --- CÁC HÀM CHỨC NĂNG ---
+        // --- CÁC HÀM CHỨC NĂNG BẢO MẬT ---
+        
+        // 1. Hàm Bơm (Đã nâng cấp: Gọi API Server thay vì MQTT trực tiếp)
         async function togglePump() {
             if (userRole !== 'admin') return;
             const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
             const action = isCurrentlyOn ? 'OFF' : 'ON';
+            
             document.getElementById('pumpText').innerText = "Đang gửi...";
-            try {
-                // Gửi lệnh ON/OFF qua MQTT tới ESP32
-                const message = new Paho.MQTT.Message(action);
-                message.destinationName = "shadowfox/commands";
-                client.send(message);
-                console.log("Đã gửi lệnh bơm:", action);
-            } catch(e) { alert("Lỗi kết nối MQTT, không gửi được lệnh!"); }
+            
+            // Gọi API bảo mật
+            const res = await fetchWithAuth('/api/control-pump', {
+                method: 'POST',
+                body: JSON.stringify({ action })
+            });
+            
+            if (res) {
+                const data = await res.json();
+                if(data.success) {
+                    console.log("Server đã gửi lệnh bơm:", action);
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            }
         }
 
+        // 2. Đổi mật khẩu (Bảo mật)
         async function changePassword() {
             const oldPass = document.getElementById('oldPass').value;
             const newPass = document.getElementById('newPass').value;
             if (!oldPass || !newPass) { alert("Vui lòng nhập đủ thông tin!"); return; }
             if (newPass.length < 6) { alert("Mật khẩu mới quá ngắn!"); return; }
-            try {
-                const r = await fetch('/api/change-password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: currentUser, oldPassword: oldPass, newPassword: newPass }) });
-                const d = await r.json(); alert(d.message);
-                if(d.success) { document.getElementById('oldPass').value = ''; document.getElementById('newPass').value = ''; }
-            } catch(e) { alert("Lỗi kết nối server!"); }
+            
+            const res = await fetchWithAuth('/api/change-password', { 
+                method: 'POST', 
+                body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }) 
+            });
+            
+            if (res) {
+                const d = await res.json(); 
+                alert(d.message);
+                if(d.success) { 
+                    document.getElementById('oldPass').value = ''; 
+                    document.getElementById('newPass').value = ''; 
+                }
+            }
         }
 
+        // 3. Load danh sách user (Bảo mật)
         async function loadUserList() {
-            // Bảo mật: Chỉ Mikeyiy được gọi
             if (currentUser !== 'Mikeyiy') return;
 
             const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-            try {
-                const res = await fetch('/api/list-users', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser }) });
+            
+            // Không cần gửi requestBy nữa, Token đã chứa thông tin đó
+            const res = await fetchWithAuth('/api/list-users', { method: 'POST' });
+            
+            if (res) {
                 const data = await res.json(); tbody.innerHTML = '';
                 if (data.success) {
                     data.users.forEach(u => {
@@ -607,23 +659,31 @@
                         tbody.insertAdjacentHTML('beforeend', `<tr><td><b>${u.username}</b></td><td>${u.email}</td><td><span class="tag ${u.role==='admin'?'ok':'warn'}">${u.role}</span></td><td>${actionHtml}</td></tr>`);
                     });
                 }
-            } catch(e) {}
+            }
         }
 
+        // 4. Đổi quyền (Bảo mật)
         async function changeRole(target, newRole) {
             if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
-            await fetch('/api/set-user-role', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser, targetUser: target, newRole }) });
+            await fetchWithAuth('/api/set-user-role', { 
+                method: 'POST', 
+                body: JSON.stringify({ targetUser: target, newRole }) 
+            });
             loadUserList();
         }
 
+        // 5. Xóa User (Bảo mật)
         async function deleteUser(target) {
             if (!confirm(`⚠️ CẢNH BÁO!\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản [${target}] không?`)) return;
-            try {
-                const res = await fetch('/api/delete-user', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ requestBy: currentUser, targetUser: target }) });
+            const res = await fetchWithAuth('/api/delete-user', { 
+                method: 'POST', 
+                body: JSON.stringify({ targetUser: target }) 
+            });
+            if (res) {
                 const data = await res.json();
                 alert(data.message);
                 if (data.success) loadUserList();
-            } catch (err) { alert("Lỗi kết nối Server!"); }
+            }
         }
 
         function switchTab(id, el) { 
@@ -631,7 +691,14 @@
             document.getElementById('tab-'+id).classList.add('active'); 
             if(el) { document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); }
         }
-        function logout() { if(confirm("Đăng xuất?")) { localStorage.removeItem('currentUser'); localStorage.removeItem('userRole'); window.location.href='index.html'; } }
+        
+        function logout() { 
+            if(confirm("Đăng xuất?")) { 
+                localStorage.clear(); // Xóa sạch Token
+                window.location.href='index.html'; 
+            } 
+        }
+        
         function saveProfile() { location.reload(); }
         function selectAvatar(u, e) { localStorage.setItem('currentAvatar', u); document.querySelectorAll('.avatar-item').forEach(i=>i.classList.remove('selected')); e.classList.add('selected'); document.getElementById('previewAvatar').src=u; }
         function updateTime() { const now = new Date(); document.getElementById('clockDisplay').innerText = now.toLocaleTimeString(currentLang==='vi'?'vi-VN':'en-US',{hour12:false}); }
@@ -640,7 +707,7 @@
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
             
-            // --- HÀM XỬ LÝ KHI CÓ TIN NHẮN TỪ ESP32 (ĐÃ UPDATE) ---
+            // --- HÀM XỬ LÝ KHI CÓ TIN NHẮN TỪ ESP32 ---
             client.onMessageArrived = (msg) => {
                 try { 
                     const data = JSON.parse(msg.payloadString);

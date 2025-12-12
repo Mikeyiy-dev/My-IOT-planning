@@ -200,9 +200,12 @@
 
                 if (data.success) {
                     if (isLoginMode) {
-                        // QUAN TRỌNG: Lưu Role server trả về vào máy
+                        // --- PHẦN QUAN TRỌNG MỚI THÊM: LƯU TOKEN ---
+                        localStorage.setItem('authToken', data.token); 
+                        // ---------------------------------------------
+
                         localStorage.setItem('currentUser', data.username);
-                        localStorage.setItem('userRole', data.role); // <-- Role admin hay viewer ở đây
+                        localStorage.setItem('userRole', data.role); // Role admin hay viewer
                         
                         alert("Đăng nhập thành công!");
                         window.location.href = 'dashboard.html';
