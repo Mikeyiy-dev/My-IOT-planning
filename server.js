@@ -1,4 +1,5 @@
-// server.js (Phiên bản SUPER ADMIN)
+// server.js - Đã nâng cấp bảo mật JWT & Dotenv
+require('dotenv').config(); // Load bảo mật từ file .env
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
@@ -8,19 +9,22 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const jwt = require('jsonwebtoken'); // Thư viện mới
 
-// --- CẤU HÌNH SUPER ADMIN (BẠN CHỈNH TÊN BẠN MUỐN VÀO ĐÂY) ---
+// --- CẤU HÌNH ---
 const SUPER_ADMIN = "Mikeyiy"; 
+const JWT_SECRET = process.env.JWT_SECRET; // Lấy từ .env
 
-// --- CẤU HÌNH GỬI EMAIL ---
+// --- GỬI EMAIL ---
 const transporter = nodemailer.createTransport({
     service: 'gmail',
-    auth: { user: 'mikeyiy2304@gmail.com', pass: 'xyxu spui lgku prvu' }
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
 });
 
 // --- KẾT NỐI MONGODB ---
-const CONNECTION_STRING = 'mongodb+srv://Mikeyiy:Dangkhoa23042004@cluster0.x3tldft.mongodb.net/MyIoT?retryWrites=true&w=majority&appName=Cluster0';
-mongoose.connect(CONNECTION_STRING).then(() => console.log("✅ MongoDB OK!"));
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ MongoDB OK!"))
+    .catch(err => console.log("❌ Lỗi DB:", err));
 
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -34,21 +38,34 @@ const User = mongoose.model('User', UserSchema);
 app.use(express.static('public'));
 app.use(bodyParser.json());
 
-// --- MQTT (Giữ nguyên) ---
+// --- MQTT ---
 const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
 const TOPIC_ROOT = 'demo_iot_vn_2025'; 
 const TOPIC_CMD = 'shadowfox/commands';
 mqttClient.on('connect', () => { mqttClient.subscribe(`${TOPIC_ROOT}/+/+`); });
 mqttClient.on('message', (topic, message) => io.emit('sensor_data', { topic, value: message.toString() }));
 
+// --- MIDDLEWARE BẢO MẬT (QUAN TRỌNG NHẤT) ---
+// Hàm này chặn mọi request không có Token hợp lệ
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Lấy token từ header "Bearer <token>"
+
+    if (!token) return res.status(401).json({ success: false, message: "Thiếu Token đăng nhập!" });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ success: false, message: "Token không hợp lệ hoặc hết hạn!" });
+        req.user = user; // Lưu thông tin người dùng đã giải mã vào biến req.user
+        next(); // Cho phép đi tiếp
+    });
+}
+
 // --- API AUTH ---
 app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
     if (await User.findOne({ username })) return res.json({ success: false, message: "Tên đã tồn tại!" });
 
-    // Nếu tên đăng ký trùng với SUPER_ADMIN -> Tự động cấp quyền Admin luôn
     const role = (username === SUPER_ADMIN) ? 'admin' : 'viewer';
-    
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, password: hashedPassword, email, role });
     await newUser.save();
@@ -61,38 +78,35 @@ app.post('/login', async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) 
         return res.json({ success: false, message: "Sai tài khoản/mật khẩu!" });
 
-    // BẢO VỆ TUYỆT ĐỐI: Nếu là Mikeyiy, luôn trả về role admin bất chấp database
     const finalRole = (username === SUPER_ADMIN) ? 'admin' : user.role;
+
+    // TẠO TOKEN: Gói tên và quyền vào trong Token
+    const token = jwt.sign({ username: user.username, role: finalRole }, JWT_SECRET, { expiresIn: '24h' });
     
-    res.json({ success: true, username: user.username, role: finalRole });
+    // Trả về Token cho Client
+    res.json({ success: true, username: user.username, role: finalRole, token: token });
 });
 
-// --- API QUẢN LÝ USER (MỚI) ---
+// --- CÁC API CẦN BẢO MẬT (Dùng middleware authenticateToken) ---
 
-// 1. Lấy danh sách tất cả user (Chỉ Admin mới xem được)
-app.post('/api/list-users', async (req, res) => {
-    const { requestBy } = req.body; 
-    const admin = await User.findOne({ username: requestBy });
-
-    // Kiểm tra quyền: Phải là Admin hoặc Super Admin
-    if (!admin || (admin.role !== 'admin' && requestBy !== SUPER_ADMIN)) 
+// 1. Lấy danh sách user
+app.post('/api/list-users', authenticateToken, async (req, res) => {
+    // Bây giờ ta kiểm tra quyền từ Token (req.user), KHÔNG tin body nữa
+    if (req.user.role !== 'admin' && req.user.username !== SUPER_ADMIN) 
         return res.json({ success: false, message: "Không có quyền!" });
 
-    // Trả về danh sách (ẩn mật khẩu)
     const users = await User.find({}, 'username email role');
     res.json({ success: true, users });
 });
 
-// 2. Thay đổi quyền (Chỉ Admin mới làm được)
-app.post('/api/set-user-role', async (req, res) => {
-    const { requestBy, targetUser, newRole } = req.body;
+// 2. Đổi quyền
+app.post('/api/set-user-role', authenticateToken, async (req, res) => {
+    const { targetUser, newRole } = req.body;
+    const requestBy = req.user.username; // Lấy tên người yêu cầu từ Token an toàn
 
-    // Check quyền người yêu cầu
-    const admin = await User.findOne({ username: requestBy });
-    if (!admin || (admin.role !== 'admin' && requestBy !== SUPER_ADMIN)) 
+    if (req.user.role !== 'admin' && requestBy !== SUPER_ADMIN) 
         return res.json({ success: false, message: "Không có quyền!" });
 
-    // KHÔNG CHO PHÉP hạ quyền của Super Admin
     if (targetUser === SUPER_ADMIN) 
         return res.json({ success: false, message: "Không thể hạ bệ VUA!" });
 
@@ -101,15 +115,11 @@ app.post('/api/set-user-role', async (req, res) => {
     res.json({ success: true, message: "Cập nhật thành công!" });
 });
 
-// --- API BƠM (Giữ nguyên logic cũ) ---
-app.post('/api/control-pump', async (req, res) => {
-    const { username, action } = req.body;
-    const user = await User.findOne({ username });
-    
-    if (!user) return res.json({ success: false, message: "Lỗi user" });
-
-    // Admin hoặc Super Admin đều được bơm
-    if (user.role === 'admin' || username === SUPER_ADMIN) {
+// 3. API Bơm
+app.post('/api/control-pump', authenticateToken, async (req, res) => {
+    const { action } = req.body;
+    // Kiểm tra quyền từ Token
+    if (req.user.role === 'admin' || req.user.username === SUPER_ADMIN) {
         mqttClient.publish(TOPIC_CMD, JSON.stringify({ device: 'pump', state: action === 'ON' }));
         res.json({ success: true, message: "Thành công" });
     } else {
@@ -117,48 +127,44 @@ app.post('/api/control-pump', async (req, res) => {
     }
 });
 
-// Forgot Password (Giữ nguyên...)
-app.post('/forgot-password', async (req, res) => {/*Code cũ của bạn*/});
-// --- API ĐỔI MẬT KHẨU (MỚI THÊM) ---
-app.post('/api/change-password', async (req, res) => {
-    const { username, oldPassword, newPassword } = req.body;
-    
-    // 1. Tìm user
-    const user = await User.findOne({ username });
-    if (!user) return res.json({ success: false, message: "User không tồn tại!" });
+// 4. Xóa User
+app.post('/api/delete-user', authenticateToken, async (req, res) => {
+    const { targetUser } = req.body;
+    const requestBy = req.user.username; // Lấy từ Token
 
-    // 2. Kiểm tra mật khẩu cũ có đúng không
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.json({ success: false, message: "Mật khẩu cũ không đúng!" });
-
-    // 3. Mã hóa mật khẩu mới và lưu lại
-    user.password = await bcrypt.hash(newPassword, 10);
-    await user.save();
-
-    console.log(`🔐 User ${username} vừa đổi mật khẩu.`);
-    res.json({ success: true, message: "Đổi mật khẩu thành công!" });
-});
-// --- API XÓA USER (CHỈ SUPER ADMIN) ---
-app.post('/api/delete-user', async (req, res) => {
-    const { requestBy, targetUser } = req.body;
-
-    // 1. Chỉ cho phép Mikeyiy thực hiện
     if (requestBy !== SUPER_ADMIN) {
-        return res.json({ success: false, message: "Bạn không đủ quyền hạn để xóa người khác!" });
+        return res.json({ success: false, message: "Chỉ Super Admin mới được xóa!" });
     }
-
-    // 2. Không cho phép tự xóa chính mình
     if (targetUser === SUPER_ADMIN) {
-        return res.json({ success: false, message: "Không thể xóa tài khoản Super Admin!" });
+        return res.json({ success: false, message: "Không thể xóa chính mình!" });
     }
 
-    // 3. Thực hiện xóa
     try {
         await User.deleteOne({ username: targetUser });
-        console.log(`❌ SUPER ADMIN đã xóa user: ${targetUser}`);
-        res.json({ success: true, message: `Đã xóa bay màu tài khoản ${targetUser}!` });
+        console.log(`❌ ${requestBy} đã xóa user: ${targetUser}`);
+        res.json({ success: true, message: `Đã xóa tài khoản ${targetUser}!` });
     } catch (e) {
-        res.json({ success: false, message: "Lỗi Database: " + e.message });
+        res.json({ success: false, message: "Lỗi Database" });
     }
 });
-http.listen(3000, () => console.log('🚀 Server running...'));
+
+// 5. Đổi mật khẩu
+app.post('/api/change-password', authenticateToken, async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const username = req.user.username; // Chỉ đổi được cho chính mình (từ Token)
+
+    const user = await User.findOne({ username });
+    if (!user) return res.json({ success: false, message: "Lỗi user" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.json({ success: false, message: "Mật khẩu cũ sai!" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ success: true, message: "Đổi mật khẩu thành công!" });
+});
+
+// API Quên mật khẩu giữ nguyên (hoặc nâng cấp sau)
+app.post('/forgot-password', async (req, res) => { /* Code cũ... */ });
+
+http.listen(3000, () => console.log('🚀 Server running with JWT Security...'));
