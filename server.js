@@ -171,7 +171,7 @@ app.post('/api/delete-user', authenticateToken, async (req, res) => {
 
     try {
         await User.deleteOne({ username: targetUser });
-        res.json({ success: true, message: `Đã xóa tài khoản ${targetUser}!` });
+        res.json({ success: true, message: `Đã đá đít tài khoản ${targetUser} ra khỏi đây!` });
     } catch (e) {
         res.json({ success: false, message: "Lỗi Database" });
     }
