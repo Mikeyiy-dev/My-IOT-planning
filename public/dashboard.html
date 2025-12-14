@@ -42,7 +42,7 @@
             border-color: rgba(255,255,255,0.1);
         }
         body.dark-mode .menu-item:hover { background: #334155; }
-        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td, body.dark-mode .form-select {
+        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td, body.dark-mode .form-select, body.dark-mode .modal-content {
             border-color: #334155;
             background: #1e293b; color: #f1f5f9;
         }
@@ -52,18 +52,18 @@
         /* --- CHẾ ĐỘ TRONG SUỐT (GLASSMORPHISM) --- */
         body.transparent-ui .sidebar,
         body.transparent-ui .content-container,
-        body.transparent-ui .card {
-            background: rgba(255, 255, 255, 0.25) !important; /* Kính trong suốt */
-            backdrop-filter: blur(15px); /* Làm mờ hậu cảnh */
-            -webkit-backdrop-filter: blur(15px);
+        body.transparent-ui .card,
+        body.transparent-ui .modal-content {
+            background: rgba(255, 255, 255, 0.25) !important;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
         }
-        /* Trong suốt trên Dark Mode */
         body.dark-mode.transparent-ui .sidebar,
         body.dark-mode.transparent-ui .content-container,
-        body.dark-mode.transparent-ui .card {
-            background: rgba(0, 0, 0, 0.4) !important; /* Kính đen */
+        body.dark-mode.transparent-ui .card,
+        body.dark-mode.transparent-ui .modal-content {
+            background: rgba(0, 0, 0, 0.4) !important;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -77,16 +77,7 @@
         }
 
         /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-w);
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            height: 96vh; margin: 2vh; 
-            border-radius: var(--radius);
-            display: flex; flex-direction: column;
-            box-shadow: var(--shadow);
-            z-index: 100; border: 1px solid rgba(255,255,255,0.5);
-        }
+        .sidebar { width: var(--sidebar-w); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); height: 96vh; margin: 2vh; border-radius: var(--radius); display: flex; flex-direction: column; box-shadow: var(--shadow); z-index: 100; border: 1px solid rgba(255,255,255,0.5); }
         .logo-box { padding: 25px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--primary-light); }
         .logo-img { width: 45px; height: auto; max-height: 45px; object-fit: contain; }
         .logo-text h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
@@ -99,68 +90,53 @@
         .user-footer { padding: 20px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
         .user-footer:hover { background: var(--primary-light); border-radius: 0 0 var(--radius) var(--radius); }
         .user-avatar { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; background: #f1f5f9; padding: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
-        /* MAIN CONTENT */
         .main { flex: 1; padding: 2vh 2vh 2vh 0; overflow-y: auto; height: 100vh; }
         .content-container { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); border-radius: var(--radius); min-height: 96vh; padding: 30px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5); display: flex; flex-direction: column; }
-        
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .greeting h2 { margin: 0; font-size: 24px; color: var(--text-main); }
         .date-display { color: var(--text-light); font-size: 14px; margin-top: 5px; font-weight: 500; }
         .clock-display { font-size: 32px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; background: rgba(255,255,255,0.5); padding: 5px 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-
         .iot-status { font-size: 12px; padding: 5px 10px; border-radius: 20px; background: #eee; color: #666; display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; }
         .iot-status.connected { background: #d1fae5; color: #065f46; }
         .iot-dot { width: 8px; height: 8px; background: #ccc; border-radius: 50%; }
         .iot-status.connected .iot-dot { background: #10b981; box-shadow: 0 0 5px #10b981; }
-
         .tab-content { display: none; animation: fadeIn 0.4s ease; flex: 1; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
         .card { background: var(--bg-card); border-radius: 16px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 25px; position: relative; overflow: hidden; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .card-title i { color: var(--primary); font-size: 20px; }
-
         .camera-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; position: relative; }
         .camera-container img { width: 100%; height: 100%; object-fit: cover; }
         .live-badge { position: absolute; top: 12px; left: 12px; background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
         .live-badge::before { content:''; width: 6px; height: 6px; background: white; border-radius: 50%; }
-
         .pump-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; transition: 0.3s; cursor: pointer; border: 2px solid transparent; }
         .pump-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .pump-icon { width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 15px; transition: 0.3s; }
         .pump-card.active { border-color: var(--primary); background: #f0f7ff; }
         .pump-card.active .pump-icon { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
-
         .stat-value { font-size: 36px; font-weight: 700; color: var(--text-main); margin: 10px 0; }
         .alert-box { padding: 15px; border-radius: 12px; background: #ecfdf5; color: var(--success); font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #d1fae5; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .alert-box.danger { background: #fef2f2; color: var(--danger); border-color: #fee2e2; }
-
         .avatar-grid { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
         .avatar-item { width: 70px; height: 70px; border-radius: 50%; padding: 10px; border: 3px solid #e2e8f0; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; background: #fff; }
         .avatar-item img { width: 100%; height: 100%; object-fit: contain; }
         .avatar-item:hover, .avatar-item.selected { border-color: var(--primary); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-
         .input-modern { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; margin-top: 10px; outline: none; transition: 0.2s; background: var(--bg-card); color: var(--text-main); }
         .input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        
         .btn { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
         .btn-primary { background: var(--primary); color: white; width: 100%; margin-top: 15px; }
         .btn-primary:hover { background: #4338ca; }
         .btn-danger { background: #fee2e2; color: var(--danger); width: 100%; margin-top: 10px; }
         .btn-danger:hover { background: #fecaca; }
-
         .modern-table { width: 100%; border-collapse: collapse; }
         .modern-table th { text-align: left; padding: 16px; color: var(--text-light); font-weight: 600; border-bottom: 1px solid #e2e8f0; font-size: 13px; text-transform: uppercase; }
         .modern-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); font-size: 14px; }
         .tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .tag.ok { background: #ecfdf5; color: var(--success); }
         .tag.warn { background: #fffbeb; color: var(--warning); }
-
-        /* SETTINGS STYLES */
         .setting-section { margin-bottom: 30px; }
         .setting-title { font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
@@ -173,9 +149,19 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(24px); }
         .form-select { padding: 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; color: var(--text-main); font-family: 'Inter'; font-size: 14px; background-color: var(--bg-card); cursor: pointer; }
-
-        /* ANIMATION CHO KHUNG ẢNH */
+        
+        /* ANIMATION KHUNG ẢNH */
         @keyframes flashBorder { 0% { border-color: #ef4444; } 50% { border-color: transparent; } 100% { border-color: #ef4444; } }
+
+        /* [MỚI] STYLES CHO TÍNH NĂNG THÊM THIẾT BỊ */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--bg-card); margin: 10% auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: fadeIn 0.3s; position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; top: 10px; right: 15px; }
+        .close:hover, .close:focus { color: var(--danger); text-decoration: none; cursor: pointer; }
+        
+        /* Nút nổi (Floating Button) */
+        .fab-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); cursor: pointer; transition: 0.3s; z-index: 90; border: none; }
+        .fab-btn:hover { transform: scale(1.1) rotate(90deg); }
 
         @media (max-width: 1024px) {
             .sidebar { width: 80px; } .logo-text, .menu-item span, .user-footer div { display: none; }
@@ -269,10 +255,11 @@
                             </div>
                             <div id="eventTime" style="font-size:12px; color:#666; margin-top:5px; text-align:right;">--:--:--</div>
                         </div>
+
                         <div class="card" style="text-align: center;">
                             <div class="card-title" style="justify-content: center; margin-bottom: 5px;" data-i18n="gauge.title">Mực nước hiện tại</div>
                             <div id="gaugeChart" style="margin-top: -15px;"></div>
-                            <div class="stat-value" id="waterLevelText" style="color: var(--primary);">0%</div>
+                            <div class="stat-value" id="waterLevelText" style="color: var(--primary);">0 cm</div>
                             <div id="statusAlert" class="alert-box"><i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span></div>
                         </div>
                         <div class="card">
@@ -289,6 +276,12 @@
                         </div>
                     </div>
                 </div>
+
+                <h3 style="margin: 30px 0 15px 0; font-size: 18px; color: var(--text-main); display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
+                    <i class='bx bx-extension'></i> Thiết bị mở rộng
+                </h3>
+                <div id="dynamic-grid" class="dashboard-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+                    </div>
             </div>
 
             <div id="tab-camera" class="tab-content">
@@ -422,18 +415,148 @@
         </div>
     </main>
 
+    <button class="fab-btn" onclick="openAddDeviceModal()" title="Thêm thiết bị mới">
+        <i class='bx bx-plus'></i>
+    </button>
+
+    <div id="addDeviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddDeviceModal()">&times;</span>
+            <h3 style="margin-bottom: 20px; color: var(--primary);">Thêm thiết bị mới</h3>
+            
+            <label style="font-size: 13px; font-weight: 600;">Tên thiết bị:</label>
+            <input type="text" id="newDevName" class="input-modern" placeholder="Ví dụ: Đèn sân vườn, Nhiệt độ phòng...">
+            
+            <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">Loại thiết bị:</label>
+            <select id="newDevType" class="form-select" style="width:100%; margin-top:5px;">
+                <option value="sensor">Cảm biến (Chỉ hiển thị)</option>
+                <option value="switch">Công tắc (Bật/Tắt)</option>
+            </select>
+
+            <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">MQTT Topic (Quan trọng):</label>
+            <input type="text" id="newDevTopic" class="input-modern" placeholder="Ví dụ: home/light1">
+            <span style="font-size:11px; color:#666;">*Topic này phải khớp với code nạp vào ESP32 mới</span>
+            
+            <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">Đơn vị (nếu là cảm biến):</label>
+            <input type="text" id="newDevUnit" class="input-modern" placeholder="Ví dụ: °C, %, Lux...">
+
+            <button class="btn btn-primary" onclick="addNewDevice()" style="margin-top: 20px;">Lưu thiết bị</button>
+        </div>
+    </div>
+
     <script>
         // --- 1. CẤU HÌNH ---
         const mqttHost = "broker.hivemq.com"; 
-        const mqttPort = 8884; // Cổng WSS để chạy trên Render (HTTPS)
+        const mqttPort = 8884; 
         const mqttTopic = "shadowfox/system_data";
         
         // [MỚI] KHỞI TẠO SOCKET KẾT NỐI SERVER
         const socket = io(); 
 
         let client = null;
-        let lastPumpState = false; // Biến theo dõi trạng thái bơm để ghi nhật ký
+        let lastPumpState = false; 
         
+        // --- [MỚI] QUẢN LÝ THIẾT BỊ ĐỘNG (Lưu trong trình duyệt) ---
+        let customDevices = []; 
+
+        function loadCustomDevices() {
+            const saved = localStorage.getItem('customDevices');
+            if (saved) {
+                customDevices = JSON.parse(saved);
+                renderCustomDevices();
+            }
+        }
+
+        function renderCustomDevices() {
+            const container = document.getElementById('dynamic-grid');
+            container.innerHTML = ''; // Xóa cũ vẽ lại
+
+            customDevices.forEach((dev, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                // Nút xóa thiết bị nhỏ ở góc
+                const deleteBtn = `<span style="position:absolute; top:10px; right:10px; cursor:pointer; color:#ef4444;" onclick="removeDevice(${index})"><i class='bx bx-x'></i></span>`;
+
+                if (dev.type === 'sensor') {
+                    // GIAO DIỆN CẢM BIẾN
+                    card.innerHTML = `
+                        ${deleteBtn}
+                        <div class="card-title" style="justify-content: center;">${dev.name}</div>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <div class="stat-value" id="val-${index}" style="color: var(--primary);">--</div>
+                            <div style="color: var(--secondary); font-size: 14px;">${dev.unit}</div>
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; text-align: center;">Topic: ${dev.topic}</div>
+                    `;
+                } else {
+                    // GIAO DIỆN CÔNG TẮC
+                    card.innerHTML = `
+                        ${deleteBtn}
+                        <div class="card-title" style="justify-content: center;">${dev.name}</div>
+                        <div class="pump-card" id="btn-${index}" onclick="toggleCustomDevice(${index})">
+                            <div class="pump-icon"><i class='bx bx-power-off'></i></div>
+                            <div style="font-weight: 600; margin-top: 10px;" id="txt-${index}">OFF</div>
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px;">Topic: ${dev.topic}</div>
+                    `;
+                }
+                container.appendChild(card);
+            });
+        }
+
+        function openAddDeviceModal() { document.getElementById('addDeviceModal').style.display = 'block'; }
+        function closeAddDeviceModal() { document.getElementById('addDeviceModal').style.display = 'none'; }
+
+        function addNewDevice() {
+            const name = document.getElementById('newDevName').value;
+            const type = document.getElementById('newDevType').value;
+            const topic = document.getElementById('newDevTopic').value;
+            const unit = document.getElementById('newDevUnit').value;
+
+            if(!name || !topic) { alert("Vui lòng nhập tên và Topic!"); return; }
+
+            customDevices.push({ name, type, topic, unit, value: 'OFF' });
+            localStorage.setItem('customDevices', JSON.stringify(customDevices));
+            
+            // Subscribe topic mới ngay lập tức
+            if(client && client.isConnected()) {
+                client.subscribe(topic);
+            }
+
+            renderCustomDevices();
+            closeAddDeviceModal();
+            // Reset form
+            document.getElementById('newDevName').value = '';
+            document.getElementById('newDevTopic').value = '';
+        }
+
+        function removeDevice(index) {
+            if(confirm("Xóa thiết bị này?")) {
+                customDevices.splice(index, 1);
+                localStorage.setItem('customDevices', JSON.stringify(customDevices));
+                renderCustomDevices();
+            }
+        }
+
+        function toggleCustomDevice(index) {
+            const dev = customDevices[index];
+            const newState = (dev.value === 'ON') ? 'OFF' : 'ON';
+            
+            // Cập nhật giao diện ngay lập tức cho mượt
+            dev.value = newState;
+            const btn = document.getElementById(`btn-${index}`);
+            const txt = document.getElementById(`txt-${index}`);
+            
+            if(newState === 'ON') { btn.classList.add('active'); txt.innerText = "ON"; }
+            else { btn.classList.remove('active'); txt.innerText = "OFF"; }
+
+            // Gửi MQTT
+            const message = new Paho.MQTT.Message(newState);
+            message.destinationName = dev.topic;
+            client.send(message);
+        }
+
         // --- MIDDLEWARE BẢO MẬT: GỌI API KÈM TOKEN ---
         async function fetchWithAuth(url, options = {}) {
             const token = localStorage.getItem('authToken');
@@ -462,7 +585,7 @@
             }
         }
 
-        // --- 2. HỆ THỐNG NGÔN NGỮ (Full) ---
+        // --- HỆ THỐNG NGÔN NGỮ, KHỞI TẠO (GIỮ NGUYÊN) ---
         const translations = {
             vi: {
                 "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt",
@@ -487,97 +610,59 @@
                 "btn.save": "Save Changes", "btn.logout": "Logout"
             }
         };
-
         let currentLang = localStorage.getItem('lang') || 'vi';
-        
-        // --- 3. LẤY THÔNG TIN ĐĂNG NHẬP ---
         const currentUser = localStorage.getItem('currentUser') || "Guest"; 
         let userRole = localStorage.getItem('userRole') || 'viewer';
         if (currentUser === 'Mikeyiy') userRole = 'admin';
 
-        // --- HÀM THÊM NHẬT KÝ ---
         function addLogRecord(event, detail, statusText, statusClass) {
             const tbody = document.getElementById('logBody');
             const row = document.createElement('tr');
             const time = new Date().toLocaleTimeString('vi-VN');
-            
-            row.innerHTML = `
-                <td>${time}</td>
-                <td style="font-weight: 600;">${event}</td>
-                <td>${detail}</td>
-                <td><span class="tag ${statusClass}">${statusText}</span></td>
-            `;
+            row.innerHTML = `<td>${time}</td><td style="font-weight: 600;">${event}</td><td>${detail}</td><td><span class="tag ${statusClass}">${statusText}</span></td>`;
             tbody.insertBefore(row, tbody.firstChild);
             if(tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
         }
 
-        // --- 4. KHỞI TẠO ---
         function init() {
-            // Cập nhật UI Tên & Avatar
             document.getElementById('sidebarName').innerText = currentUser;
             document.getElementById('headerName').innerText = currentUser;
             document.getElementById('sidebarRole').innerText = userRole.toUpperCase();
             document.getElementById('previewName').innerText = currentUser;
             document.getElementById('previewRole').innerText = userRole.toUpperCase();
-            
             let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png";
             document.getElementById('sidebarAvatar').src = currentAvatar;
             document.getElementById('previewAvatar').src = currentAvatar;
 
-            // PHÂN QUYỀN
             const pumpBtn = document.getElementById('btnPump');
             const adminMenu = document.getElementById('menuAdmin');
-
             if (userRole === 'admin') {
-                pumpBtn.style.opacity = '1';
-                pumpBtn.style.cursor = 'pointer';
-                if (currentUser === 'Mikeyiy') {
-                    if(adminMenu) adminMenu.style.display = 'flex';
-                } else {
-                    if(adminMenu) adminMenu.style.display = 'none';
-                }
+                pumpBtn.style.opacity = '1'; pumpBtn.style.cursor = 'pointer';
+                if (currentUser === 'Mikeyiy') { if(adminMenu) adminMenu.style.display = 'flex'; } else { if(adminMenu) adminMenu.style.display = 'none'; }
             } else {
-                pumpBtn.style.opacity = '0.5';
-                pumpBtn.style.cursor = 'not-allowed';
+                pumpBtn.style.opacity = '0.5'; pumpBtn.style.cursor = 'not-allowed';
                 pumpBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); };
                 document.getElementById('pumpText').innerText = "CHỈ XEM (VIEW ONLY)";
                 if(adminMenu) adminMenu.style.display = 'none';
             }
 
-            // Load Cài đặt
             document.getElementById('langSelect').value = currentLang;
-            changeLanguage(currentLang);
-            
-            if(localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkModeToggle').checked = true;
-            }
-
-            // LOAD TRẠNG THÁI TRONG SUỐT
-            if(localStorage.getItem('transparentMode') === 'true') {
-                document.body.classList.add('transparent-ui');
-                document.getElementById('transparentToggle').checked = true;
-            }
-
+            changeLanguage(currentLang); 
+            if(localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
+            if(localStorage.getItem('transparentMode') === 'true') { document.body.classList.add('transparent-ui'); document.getElementById('transparentToggle').checked = true; }
             const savedBg = localStorage.getItem('modern_bg');
             if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
 
-            // --- [MỚI] LẮNG NGHE SỰ KIỆN ẢNH TỪ SERVER ---
+            // [MỚI] Load danh sách thiết bị
+            loadCustomDevices();
+
             socket.on('new_snapshot', function(data) {
                 console.log("📸 Có ảnh mới từ Camera!", data);
-                
-                // 1. Hiện khung ảnh lên
                 const card = document.getElementById('cameraEventCard');
                 card.style.display = 'block';
-                
-                // 2. Cập nhật ảnh (thêm timestamp để tránh cache)
                 const img = document.getElementById('eventImage');
                 img.src = data.url + "?t=" + new Date().getTime();
-                
-                // 3. Cập nhật giờ
                 document.getElementById('eventTime').innerText = "Chụp lúc: " + data.time;
-                
-                // 4. Ghi vào nhật ký luôn cho máu
                 addLogRecord("📸 ĐÃ CHỤP ẢNH", "Phát hiện sự cố ngập, đã lưu ảnh", "Đã lưu", "warn");
             });
 
@@ -586,7 +671,7 @@
             setInterval(updateTime, 1000);
         }
 
-        // --- CÁC HÀM CÀI ĐẶT ---
+        // --- CÁC HÀM HỖ TRỢ (GIỮ NGUYÊN) ---
         function changeLanguage(lang) {
             currentLang = lang; localStorage.setItem('lang', lang);
             const elements = document.querySelectorAll('[data-i18n]');
@@ -595,74 +680,28 @@
                 if (translations[lang][key]) el.innerText = translations[lang][key];
             });
         }
-        function toggleDarkMode() { 
-            const d = document.getElementById('darkModeToggle').checked; 
-            if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); 
-            localStorage.setItem('darkMode', d); 
-        }
-
-        function toggleTransparent() {
-            const isTransparent = document.getElementById('transparentToggle').checked;
-            if (isTransparent) {
-                document.body.classList.add('transparent-ui');
-            } else {
-                document.body.classList.remove('transparent-ui');
-            }
-            localStorage.setItem('transparentMode', isTransparent);
-        }
-
-        function changeBg(e) {
-            const file = e.target.files[0];
-            if(file){
-                const reader = new FileReader();
-                reader.onload = (evt) => {
-                    const bgData = evt.target.result;
-                    document.body.style.backgroundImage = `url('${bgData}')`;
-                    localStorage.setItem('modern_bg', bgData);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-        function resetBg() {
-            localStorage.removeItem('modern_bg');
-            document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')";
-        }
-
-        // --- CÁC HÀM CHỨC NĂNG BẢO MẬT ---
+        function toggleDarkMode() { const d = document.getElementById('darkModeToggle').checked; if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', d); }
+        function toggleTransparent() { const isTransparent = document.getElementById('transparentToggle').checked; if (isTransparent) document.body.classList.add('transparent-ui'); else document.body.classList.remove('transparent-ui'); localStorage.setItem('transparentMode', isTransparent); }
+        function changeBg(e) { const file = e.target.files[0]; if(file){ const reader = new FileReader(); reader.onload = (evt) => { const bgData = evt.target.result; document.body.style.backgroundImage = `url('${bgData}')`; localStorage.setItem('modern_bg', bgData); }; reader.readAsDataURL(file); } }
+        function resetBg() { localStorage.removeItem('modern_bg'); document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')"; }
         
-        async function togglePump() {
-            if (userRole !== 'admin') return;
-            const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
-            const action = isCurrentlyOn ? 'OFF' : 'ON';
-            
-            document.getElementById('pumpText').innerText = "Đang gửi...";
-            
-            const res = await fetchWithAuth('/api/control-pump', {
-                method: 'POST',
-                body: JSON.stringify({ action })
-            });
-            
-            if (res) {
-                const data = await res.json();
-                if(data.success) {
-                    console.log("Server đã gửi lệnh bơm:", action);
-                } else {
-                    alert("Lỗi: " + data.message);
-                }
-            }
+        async function togglePump() { 
+             if (userRole !== 'admin') return;
+             const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
+             const action = isCurrentlyOn ? 'OFF' : 'ON';
+             document.getElementById('pumpText').innerText = "Đang gửi...";
+             const res = await fetchWithAuth('/api/control-pump', { method: 'POST', body: JSON.stringify({ action }) });
+             if (res) { const data = await res.json(); if(data.success) console.log("Sent:", action); else alert("Lỗi: " + data.message); }
         }
-
-        async function changePassword() {
+        async function changePassword() { 
             const oldPass = document.getElementById('oldPass').value;
             const newPass = document.getElementById('newPass').value;
             if (!oldPass || !newPass) { alert("Vui lòng nhập đủ thông tin!"); return; }
             if (newPass.length < 6) { alert("Mật khẩu mới quá ngắn!"); return; }
-            
             const res = await fetchWithAuth('/api/change-password', { 
                 method: 'POST', 
                 body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }) 
             });
-            
             if (res) {
                 const d = await res.json(); 
                 alert(d.message);
@@ -672,13 +711,10 @@
                 }
             }
         }
-
         async function loadUserList() {
             if (currentUser !== 'Mikeyiy') return;
-
             const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
             const res = await fetchWithAuth('/api/list-users', { method: 'POST' });
-            
             if (res) {
                 const data = await res.json(); tbody.innerHTML = '';
                 if (data.success) {
@@ -690,7 +726,6 @@
                             let roleBtn = '';
                             if (u.role === 'admin') roleBtn = `<button class="btn" style="background:#f59e0b; color:white; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`;
                             else roleBtn = `<button class="btn btn-primary" style="background:#4f46e5; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
-                            
                             const deleteBtn = `<button class="btn" style="background:#ef4444; color:white; padding:5px 10px; font-size:12px; margin:0; margin-left:5px;" onclick="deleteUser('${u.username}')"><i class='bx bx-trash'></i> Xóa</button>`;
                             actionHtml = `<div style="display:flex;">${roleBtn} ${deleteBtn}</div>`;
                         }
@@ -699,7 +734,6 @@
                 }
             }
         }
-
         async function changeRole(target, newRole) {
             if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
             await fetchWithAuth('/api/set-user-role', { 
@@ -708,7 +742,6 @@
             });
             loadUserList();
         }
-
         async function deleteUser(target) {
             if (!confirm(`⚠️ CẢNH BÁO!\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản [${target}] không?`)) return;
             const res = await fetchWithAuth('/api/delete-user', { 
@@ -721,20 +754,8 @@
                 if (data.success) loadUserList();
             }
         }
-
-        function switchTab(id, el) { 
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
-            document.getElementById('tab-'+id).classList.add('active'); 
-            if(el) { document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); }
-        }
-        
-        function logout() { 
-            if(confirm("Đăng xuất?")) { 
-                localStorage.clear(); // Xóa sạch Token
-                window.location.href='index.html'; 
-            } 
-        }
-        
+        function switchTab(id, el) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); if(el) { document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); } }
+        function logout() { if(confirm("Đăng xuất?")) { localStorage.clear(); window.location.href='index.html'; } }
         function saveProfile() { location.reload(); }
         function selectAvatar(u, e) { localStorage.setItem('currentAvatar', u); document.querySelectorAll('.avatar-item').forEach(i=>i.classList.remove('selected')); e.classList.add('selected'); document.getElementById('previewAvatar').src=u; }
         function updateTime() { const now = new Date(); document.getElementById('clockDisplay').innerText = now.toLocaleTimeString(currentLang==='vi'?'vi-VN':'en-US',{hour12:false}); }
@@ -744,85 +765,73 @@
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
             
             client.onMessageArrived = (msg) => {
-                try { 
-                    const data = JSON.parse(msg.payloadString);
-                    
-                    // --- CHUYỂN ĐỔI SANG CM ---
-                    const MAX_DEPTH = 10.2; 
-                    let depthCM = (data.waterLevel / 100) * MAX_DEPTH;
-                    depthCM = parseFloat(depthCM.toFixed(1)); 
+                const topic = msg.destinationName;
+                const payload = msg.payloadString;
 
-                    // --- TỰ ĐỘNG GHI LOG VÀO BẢNG ---
-                    if (data.isPumpOn === true && lastPumpState === false) {
-                        addLogRecord("⚠️ CẢNH BÁO NGẬP", `Độ sâu đo được: ${depthCM} cm`, "Bơm ĐÃ BẬT", "warn");
+                // --- 1. XỬ LÝ DỮ LIỆU CHÍNH ---
+                if (topic === mqttTopic) {
+                    try { 
+                        const data = JSON.parse(payload);
+                        const MAX_DEPTH = 10.2; 
+                        let depthCM = (data.waterLevel / 100) * MAX_DEPTH;
+                        depthCM = parseFloat(depthCM.toFixed(1)); 
+
+                        if (data.isPumpOn === true && lastPumpState === false) addLogRecord("⚠️ CẢNH BÁO NGẬP", `Độ sâu đo được: ${depthCM} cm`, "Bơm ĐÃ BẬT", "warn");
+                        else if (data.isPumpOn === false && lastPumpState === true) addLogRecord("✅ Đã xử lý xong", `Độ sâu giảm còn: ${depthCM} cm`, "Bơm ĐÃ TẮT", "ok");
+                        lastPumpState = data.isPumpOn;
+
+                        // --- [MỚI] HIỂN THỊ CẢ 2 ĐƠN VỊ ---
+                        document.getElementById('waterLevelText').innerHTML = 
+                            depthCM + " cm <div style='font-size:16px; color:#9ca3af; margin-top:5px;'>(" + data.waterLevel + "%)</div>";
+
+                        gaugeChart.updateSeries([data.waterLevel]);
+                        const now = new Date().toLocaleTimeString();
+                        lineChart.appendData([{ data: [{ x: now, y: depthCM }] }]);
+
+                        const btn = document.getElementById('btnPump');
+                        const txtPump = document.getElementById('pumpText');
+                        if(data.isPumpOn) { btn.classList.add('active'); if(userRole === 'admin') txtPump.innerText = "ĐANG CHẠY"; } 
+                        else { btn.classList.remove('active'); if(userRole === 'admin') txtPump.innerText = "ĐANG TẮT"; }
+
+                        const alertBox = document.getElementById('statusAlert');
+                        const sirenTxt = document.getElementById('sirenText');
+                        if (data.isSirenOn) { alertBox.className = 'alert-box danger'; alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!"; sirenTxt.innerText = "ĐANG KÊU 🔊"; sirenTxt.style.color = "#ef4444"; sirenTxt.style.fontWeight = "bold"; } 
+                        else { alertBox.className = 'alert-box'; alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn"; sirenTxt.innerText = "Im lặng"; sirenTxt.style.color = "var(--secondary)"; }
+                    } catch(e){ console.error("Lỗi MQTT:", e); }
+                }
+
+                // --- 2. XỬ LÝ DYNAMIC DEVICES ---
+                customDevices.forEach((dev, index) => {
+                    if (dev.topic === topic) {
+                        if (dev.type === 'sensor') {
+                            document.getElementById(`val-${index}`).innerText = payload;
+                        } else if (dev.type === 'switch') {
+                            dev.value = payload; 
+                            const btn = document.getElementById(`btn-${index}`);
+                            const txt = document.getElementById(`txt-${index}`);
+                            if(payload === 'ON') { btn.classList.add('active'); txt.innerText = "ON"; }
+                            else { btn.classList.remove('active'); txt.innerText = "OFF"; }
+                        }
                     }
-                    else if (data.isPumpOn === false && lastPumpState === true) {
-                        addLogRecord("✅ Đã xử lý xong", `Độ sâu giảm còn: ${depthCM} cm`, "Bơm ĐÃ TẮT", "ok");
-                    }
-                    lastPumpState = data.isPumpOn;
-
-                    // 1. Cập nhật Mực nước
-                    document.getElementById('waterLevelText').innerText = depthCM + " cm";
-                    gaugeChart.updateSeries([data.waterLevel]);
-
-                    // 2. Cập nhật Biểu đồ
-                    const now = new Date().toLocaleTimeString();
-                    lineChart.appendData([{
-                        data: [{ x: now, y: depthCM }]
-                    }]);
-
-                    // 3. Cập nhật Bơm
-                    const btn = document.getElementById('btnPump');
-                    const txtPump = document.getElementById('pumpText');
-                    
-                    if(data.isPumpOn) { 
-                        btn.classList.add('active'); 
-                        if(userRole === 'admin') txtPump.innerText = "ĐANG CHẠY"; 
-                    } else { 
-                        btn.classList.remove('active'); 
-                        if(userRole === 'admin') txtPump.innerText = "ĐANG TẮT"; 
-                    }
-
-                    // 4. Cập nhật Còi
-                    const alertBox = document.getElementById('statusAlert');
-                    const sirenTxt = document.getElementById('sirenText');
-
-                    if (data.isSirenOn) {
-                        alertBox.className = 'alert-box danger';
-                        alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!";
-                        sirenTxt.innerText = "ĐANG KÊU 🔊";
-                        sirenTxt.style.color = "#ef4444"; sirenTxt.style.fontWeight = "bold";
-                    } else {
-                        alertBox.className = 'alert-box';
-                        alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn";
-                        sirenTxt.innerText = "Im lặng"; sirenTxt.style.color = "var(--secondary)";
-                    }
-
-                } catch(e){ console.error("Lỗi MQTT:", e); }
+                });
             };
 
             client.connect({ 
                 onSuccess: () => { 
                     client.subscribe(mqttTopic); 
+                    // [MỚI] Subscribe các topic thiết bị mới
+                    customDevices.forEach(dev => {
+                        client.subscribe(dev.topic);
+                    });
                     document.getElementById('mqttStatus').className = 'iot-status connected'; 
                     document.getElementById('mqttText').innerText="Đã kết nối"; 
                 }, 
-                onFailure: (e) => {
-                    console.log("Lỗi kết nối:", e);
-                    document.getElementById('mqttText').innerText="Lỗi kết nối";
-                },
+                onFailure: (e) => { console.log("Lỗi:", e); document.getElementById('mqttText').innerText="Lỗi kết nối"; },
                 useSSL: true 
             }); 
         }
 
-        var lineChart = new ApexCharts(document.querySelector("#lineChart"), { 
-            series: [{name:'Độ sâu (cm)',data:[]}], 
-            chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, 
-            stroke:{curve:'smooth'},
-            xaxis: { type: 'category', range: 10 } 
-        }); 
-        lineChart.render();
-        
+        var lineChart = new ApexCharts(document.querySelector("#lineChart"), { series: [{name:'Độ sâu (cm)',data:[]}], chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, stroke:{curve:'smooth'}, xaxis: { type: 'category', range: 10 } }); lineChart.render();
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
 
         async function exportData() {
