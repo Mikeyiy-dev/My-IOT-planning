@@ -405,19 +405,29 @@
             const message = new Paho.MQTT.Message(newState); message.destinationName = dev.topic; client.send(message);
         }
         
-        async function triggerSnapshot() {
-             try {
-                 const res = await fetch('/api/manual-snap', { method: 'POST' });
-                 const data = await res.json();
-                 
-                 if (data.success) {
-                     alert("📸 Đã gửi lệnh! Camera sẽ chụp trong vài giây...");
-                     document.getElementById('camStatusBadge').innerText = "● REQUESTING...";
-                     document.getElementById('camStatusBadge').style.background = "#eab308";
-                 }
-             } catch (e) {
-                 alert("Lỗi kết nối Server: " + e.message);
-             }
+        // --- [NEW FUNCTION] Gửi lệnh chụp ảnh qua MQTT ---
+        function triggerSnapshot() {
+            // 1. Kiểm tra kết nối MQTT
+            if (!client || !client.isConnected()) {
+                alert("⚠️ Chưa kết nối MQTT! Vui lòng đợi...");
+                return;
+            }
+
+            // 2. Gửi lệnh chụp ảnh xuống ESP32
+            // Gửi một đoạn JSON có chứa từ khóa "CMD_CAPTURE"
+            const commandPayload = JSON.stringify({ cmd: "CMD_CAPTURE" });
+            
+            const message = new Paho.MQTT.Message(commandPayload);
+            message.destinationName = "shadowfox/system_data"; // Gửi vào topic hệ thống
+            client.send(message);
+
+            console.log("Đã gửi lệnh chụp ảnh:", commandPayload);
+
+            // 3. Hiệu ứng giao diện (Báo đang xử lý)
+            const badge = document.getElementById('camStatusBadge');
+            badge.innerText = "⏳ ĐANG YÊU CẦU...";
+            badge.className = "live-badge";
+            badge.style.background = "#eab308"; // Màu vàng chờ đợi
         }
         
         async function toggleSiren() {
