@@ -1,4 +1,4 @@
-// server.js - Đã nâng cấp: Lưu lịch sử & Xuất Excel & Xử lý Ảnh Camera
+// server.js - Đã nâng cấp: Thêm điều khiển Còi (Siren)
 require('dotenv').config(); // Load bảo mật từ file .env
 const express = require('express');
 const app = express();
@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 
-// --- [MỚI] THƯ VIỆN ĐỂ XỬ LÝ ẢNH ---
+// --- THƯ VIỆN ĐỂ XỬ LÝ ẢNH ---
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -53,7 +53,7 @@ const SensorData = mongoose.model('SensorData', SensorSchema);
 app.use(express.static('public'));
 app.use(bodyParser.json());
 
-// --- [MỚI] CẤU HÌNH LƯU TRỮ ẢNH CAMERA ---
+// --- CẤU HÌNH LƯU TRỮ ẢNH CAMERA ---
 const uploadDir = path.join(__dirname, 'public/uploads');
 // Tự động tạo thư mục 'uploads' nếu chưa có
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -61,7 +61,7 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
-        // Đặt tên file theo thời gian để không bị trùng: event_17154234.jpg
+        // Đặt tên file theo thời gian để không bị trùng
         cb(null, 'event_' + Date.now() + '.jpg');
     }
 });
@@ -105,7 +105,7 @@ mqttClient.on('message', async (topic, message) => {
     }
 });
 
-// --- [MỚI] API NHẬN ẢNH TỪ ESP32-CAM ---
+// --- API NHẬN ẢNH TỪ ESP32-CAM ---
 app.post('/api/upload-snapshot', upload.single('imageFile'), (req, res) => {
     if (!req.file) {
         return res.status(400).send("Lỗi: Không nhận được file ảnh!");
@@ -185,7 +185,7 @@ app.post('/api/set-user-role', authenticateToken, async (req, res) => {
     res.json({ success: true, message: "Cập nhật thành công!" });
 });
 
-// 3. API Bơm
+// 3. API Bơm (Máy bơm)
 app.post('/api/control-pump', authenticateToken, async (req, res) => {
     const { action } = req.body;
     if (req.user.role === 'admin' || req.user.username === SUPER_ADMIN) {
@@ -195,6 +195,20 @@ app.post('/api/control-pump', authenticateToken, async (req, res) => {
         res.status(403).json({ success: false, message: "Không có quyền!" });
     }
 });
+
+// --- [MỚI] 3B. API ĐIỀU KHIỂN CÒI (SIREN) ---
+app.post('/api/control-siren', authenticateToken, async (req, res) => {
+    const { action } = req.body;
+    // Chỉ Admin mới được hú còi
+    if (req.user.role === 'admin' || req.user.username === SUPER_ADMIN) {
+        // Gửi lệnh MQTT xuống ESP32: device = 'siren'
+        mqttClient.publish(TOPIC_CMD, JSON.stringify({ device: 'siren', state: action === 'ON' }));
+        res.json({ success: true, message: "Đã gửi lệnh còi" });
+    } else {
+        res.status(403).json({ success: false, message: "Không có quyền!" });
+    }
+});
+// ---------------------------------------------
 
 // 4. Xóa User
 app.post('/api/delete-user', authenticateToken, async (req, res) => {

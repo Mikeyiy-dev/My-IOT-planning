@@ -181,11 +181,9 @@
                         <div class="card" style="padding: 0; border: none; overflow: hidden;">
                             <div class="camera-container">
                                 <div class="live-badge" id="camStatusBadge">● WAIT SNAPSHOT</div>
-                                
                                 <button class="btn" onclick="triggerSnapshot()" style="position:absolute; top:12px; right:12px; padding:6px 12px; font-size:12px; background:rgba(255,255,255,0.9); color:#333; z-index:20; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
                                     <i class='bx bxs-camera'></i> Chụp Ngay
                                 </button>
-                                
                                 <img id="eventImage" src="https://via.placeholder.com/800x450?text=Chưa+có+ảnh+sự+cố+nào" alt="Ảnh sự kiện">
                                 <div id="eventTime" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">--:--:--</div>
                             </div>
@@ -204,14 +202,15 @@
                         </div>
                         <div class="card">
                             <div class="card-title" data-i18n="controls.title">Điều khiển</div>
+                            
                             <div id="btnPump" class="pump-card" onclick="togglePump()">
                                 <div class="pump-icon"><i class='bx bx-water'></i></div>
                                 <div><div style="font-weight: 600;" data-i18n="pump.name">Máy Bơm</div><div style="font-size: 12px; color: var(--text-light);" id="pumpText">OFF</div></div>
                             </div>
-                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
-                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--secondary);">
-                                    <span data-i18n="siren.label">Trạng thái Còi hú:</span><span style="font-weight: 600;" id="sirenText">--</span>
-                                </div>
+                            
+                            <div id="btnSiren" class="pump-card" onclick="toggleSiren()" style="margin-top: 15px; opacity: 0.5; cursor: not-allowed;">
+                                <div class="pump-icon"><i class='bx bxs-megaphone'></i></div>
+                                <div><div style="font-weight: 600;" data-i18n="siren.name">Còi Báo Động</div><div style="font-size: 12px; color: var(--text-light);" id="sirenStatusText">AUTO</div></div>
                             </div>
                         </div>
                     </div>
@@ -405,25 +404,65 @@
             const message = new Paho.MQTT.Message(newState); message.destinationName = dev.topic; client.send(message);
         }
         
-        // --- [MỚI] HÀM CHỤP ẢNH THỦ CÔNG ---
         function triggerSnapshot() {
              if (client && client.isConnected()) {
-                 // Gửi tin nhắn "SNAP" lên topic camera
                  const message = new Paho.MQTT.Message("SNAP");
                  message.destinationName = "shadowfox/camera_trigger";
                  client.send(message);
-                 
-                 // Hiệu ứng nút bấm
                  alert("📸 Đã gửi lệnh chụp ảnh!");
                  document.getElementById('camStatusBadge').innerText = "● REQUESTING...";
-                 document.getElementById('camStatusBadge').style.background = "#eab308"; // Màu vàng
+                 document.getElementById('camStatusBadge').style.background = "#eab308"; 
              } else {
                  alert("Lỗi: Chưa kết nối MQTT!");
              }
         }
+        
+        // [MỚI] HÀM BẬT/TẮT CÒI THỦ CÔNG
+        async function toggleSiren() {
+             if (userRole !== 'admin') return;
+             
+             // Kiểm tra trạng thái hiện tại (active class)
+             const btn = document.getElementById('btnSiren');
+             const isCurrentlyOn = btn.classList.contains('active');
+             const action = isCurrentlyOn ? 'OFF' : 'ON';
+             
+             // Cập nhật UI tạm thời
+             document.getElementById('sirenStatusText').innerText = "Đang gửi...";
+             
+             // Gửi yêu cầu lên Server (Cần server hỗ trợ endpoint này, hoặc dùng chung endpoint thiết bị)
+             // Ở đây ta tái sử dụng endpoint bơm nhưng đổi device thành 'siren' nếu server hỗ trợ
+             // HOẶC gọi một endpoint mới. Để an toàn, ta giả lập gọi endpoint 'control-pump' nhưng với device 'siren'
+             // Tuy nhiên server code cũ chỉ hardcode device='pump'.
+             // Giải pháp: Ta sẽ gọi API control-pump nhưng sửa body (NẾU server đã được update để đọc body.device)
+             // NẾU CHƯA UPDATE SERVER: Bạn cần thêm logic vào server.js để xử lý device 'siren'.
+             // Tạm thời tôi sẽ gửi request với hy vọng bạn đã update server, hoặc dùng MQTT trực tiếp từ client (kém bảo mật hơn nhưng nhanh).
+             
+             // CÁCH 1: DÙNG API (Khuyên dùng - Cần update Server)
+             const res = await fetchWithAuth('/api/control-siren', { 
+                 method: 'POST', 
+                 body: JSON.stringify({ action: action }) 
+             });
+             
+             if (res) {
+                 const data = await res.json();
+                 if(data.success) {
+                     console.log("Server đã gửi lệnh còi:", action);
+                     // Cập nhật UI sau khi thành công
+                     if(action === 'ON') {
+                        btn.classList.add('active');
+                        document.getElementById('sirenStatusText').innerText = "MANUAL ON";
+                     } else {
+                        btn.classList.remove('active');
+                        document.getElementById('sirenStatusText').innerText = "MANUAL OFF";
+                     }
+                 } else {
+                     alert("Lỗi: " + data.message);
+                 }
+             }
+        }
 
         async function fetchWithAuth(url, options = {}) { const token = localStorage.getItem('authToken'); if (!token) { alert("Phiên đăng nhập hết hạn!"); window.location.href = 'index.html'; return null; } if (!options.headers) options.headers = {}; options.headers['Authorization'] = 'Bearer ' + token; options.headers['Content-Type'] = 'application/json'; try { const res = await fetch(url, options); if (res.status === 401 || res.status === 403) { alert("Hết phiên làm việc!"); localStorage.clear(); window.location.href = 'index.html'; return null; } return res; } catch (err) { alert("Lỗi kết nối Server!"); return null; } }
-        const translations = { vi: { "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt", "header.hello": "Xin chào", "iot.disconnected": "Ngắt kết nối", "iot.connected": "Đã kết nối", "chart.title": "Biểu đồ mực nước", "gauge.title": "Mực nước hiện tại", "status.waiting": "Đang đợi dữ liệu...", "status.safe": "Hệ thống an toàn", "status.danger": "CẢNH BÁO NGẬP!", "controls.title": "Điều khiển", "pump.name": "Máy Bơm", "pump.on": "Đang Hoạt Động", "pump.off": "Đang Tắt", "siren.label": "Trạng thái Còi hú:", "logs.title": "Nhật ký hoạt động", "table.time": "Thời gian", "table.event": "Sự kiện", "table.detail": "Chi tiết", "table.status": "Trạng thái", "account.title": "Thông tin tài khoản", "account.choose_avatar": "Chọn nhân vật đại diện:", "settings.title": "Cài đặt hệ thống", "settings.interface": "Giao diện", "settings.language": "Ngôn ngữ", "settings.language_desc": "Chọn ngôn ngữ hiển thị.", "settings.dark_mode": "Chế độ Tối", "settings.dark_mode_desc": "Giao diện tối bảo vệ mắt.", "settings.wallpaper": "Hình nền", "settings.wallpaper_desc": "Tải ảnh từ máy tính.", "btn.save": "Lưu thay đổi", "btn.logout": "Đăng xuất" }, en: { "menu.home": "Overview", "menu.camera": "Camera", "menu.logs": "Logs", "menu.account": "Account", "menu.settings": "Settings", "header.hello": "Hello", "iot.disconnected": "Disconnected", "iot.connected": "Connected", "chart.title": "Water Level Chart", "gauge.title": "Current Level", "status.waiting": "Waiting for data...", "status.safe": "System Safe", "status.danger": "FLOOD ALERT!", "controls.title": "Controls", "pump.name": "Water Pump", "pump.on": "Running", "pump.off": "Stopped", "siren.label": "Siren Status:", "logs.title": "Activity Logs", "table.time": "Time", "table.event": "Event", "table.detail": "Detail", "table.status": "Status", "account.title": "Account Info", "account.choose_avatar": "Choose Avatar:", "settings.title": "System Settings", "settings.interface": "Interface", "settings.language": "Language", "settings.language_desc": "Select display language.", "settings.dark_mode": "Dark Mode", "settings.dark_mode_desc": "Switch to dark theme.", "settings.wallpaper": "Wallpaper", "settings.wallpaper_desc": "Upload image.", "btn.save": "Save Changes", "btn.logout": "Logout" } };
+        const translations = { vi: { "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt", "header.hello": "Xin chào", "iot.disconnected": "Ngắt kết nối", "iot.connected": "Đã kết nối", "chart.title": "Biểu đồ mực nước", "gauge.title": "Mực nước hiện tại", "status.waiting": "Đang đợi dữ liệu...", "status.safe": "Hệ thống an toàn", "status.danger": "CẢNH BÁO NGẬP!", "controls.title": "Điều khiển", "pump.name": "Máy Bơm", "pump.on": "Đang Hoạt Động", "pump.off": "Đang Tắt", "siren.label": "Trạng thái Còi hú:", "siren.name": "Còi Báo Động", "logs.title": "Nhật ký hoạt động", "table.time": "Thời gian", "table.event": "Sự kiện", "table.detail": "Chi tiết", "table.status": "Trạng thái", "account.title": "Thông tin tài khoản", "account.choose_avatar": "Chọn nhân vật đại diện:", "settings.title": "Cài đặt hệ thống", "settings.interface": "Giao diện", "settings.language": "Ngôn ngữ", "settings.language_desc": "Chọn ngôn ngữ hiển thị.", "settings.dark_mode": "Chế độ Tối", "settings.dark_mode_desc": "Giao diện tối bảo vệ mắt.", "settings.wallpaper": "Hình nền", "settings.wallpaper_desc": "Tải ảnh từ máy tính.", "btn.save": "Lưu thay đổi", "btn.logout": "Đăng xuất" }, en: { "menu.home": "Overview", "menu.camera": "Camera", "menu.logs": "Logs", "menu.account": "Account", "menu.settings": "Settings", "header.hello": "Hello", "iot.disconnected": "Disconnected", "iot.connected": "Connected", "chart.title": "Water Level Chart", "gauge.title": "Current Level", "status.waiting": "Waiting for data...", "status.safe": "System Safe", "status.danger": "FLOOD ALERT!", "controls.title": "Controls", "pump.name": "Water Pump", "pump.on": "Running", "pump.off": "Stopped", "siren.label": "Siren Status:", "siren.name": "Siren Alarm", "logs.title": "Activity Logs", "table.time": "Time", "table.event": "Event", "table.detail": "Detail", "table.status": "Status", "account.title": "Account Info", "account.choose_avatar": "Choose Avatar:", "settings.title": "System Settings", "settings.interface": "Interface", "settings.language": "Language", "settings.language_desc": "Select display language.", "settings.dark_mode": "Dark Mode", "settings.dark_mode_desc": "Switch to dark theme.", "settings.wallpaper": "Wallpaper", "settings.wallpaper_desc": "Upload image.", "btn.save": "Save Changes", "btn.logout": "Logout" } };
         let currentLang = localStorage.getItem('lang') || 'vi';
         const currentUser = localStorage.getItem('currentUser') || "Guest"; 
         let userRole = localStorage.getItem('userRole') || 'viewer';
@@ -433,7 +472,20 @@
 
         function init() {
             document.getElementById('sidebarName').innerText = currentUser; document.getElementById('headerName').innerText = currentUser; document.getElementById('sidebarRole').innerText = userRole.toUpperCase(); document.getElementById('previewName').innerText = currentUser; document.getElementById('previewRole').innerText = userRole.toUpperCase(); let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png"; document.getElementById('sidebarAvatar').src = currentAvatar; document.getElementById('previewAvatar').src = currentAvatar;
-            const pumpBtn = document.getElementById('btnPump'); const adminMenu = document.getElementById('menuAdmin'); if (userRole === 'admin') { pumpBtn.style.opacity = '1'; pumpBtn.style.cursor = 'pointer'; if (currentUser === 'Mikeyiy') { if(adminMenu) adminMenu.style.display = 'flex'; } else { if(adminMenu) adminMenu.style.display = 'none'; } } else { pumpBtn.style.opacity = '0.5'; pumpBtn.style.cursor = 'not-allowed'; pumpBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); }; document.getElementById('pumpText').innerText = "CHỈ XEM (VIEW ONLY)"; if(adminMenu) adminMenu.style.display = 'none'; }
+            const pumpBtn = document.getElementById('btnPump'); 
+            const sirenBtn = document.getElementById('btnSiren');
+            const adminMenu = document.getElementById('menuAdmin'); 
+            
+            if (userRole === 'admin') { 
+                pumpBtn.style.opacity = '1'; pumpBtn.style.cursor = 'pointer'; 
+                sirenBtn.style.opacity = '1'; sirenBtn.style.cursor = 'pointer'; // Mở khóa nút còi
+                if (currentUser === 'Mikeyiy') { if(adminMenu) adminMenu.style.display = 'flex'; } else { if(adminMenu) adminMenu.style.display = 'none'; } 
+            } else { 
+                pumpBtn.style.opacity = '0.5'; pumpBtn.style.cursor = 'not-allowed'; pumpBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); }; 
+                sirenBtn.style.opacity = '0.5'; sirenBtn.style.cursor = 'not-allowed'; sirenBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); }; 
+                document.getElementById('pumpText').innerText = "CHỈ XEM (VIEW ONLY)"; 
+                if(adminMenu) adminMenu.style.display = 'none'; 
+            }
             document.getElementById('langSelect').value = currentLang; changeLanguage(currentLang); 
             if(localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
             if(localStorage.getItem('transparentMode') === 'true') { document.body.classList.add('transparent-ui'); document.getElementById('transparentToggle').checked = true; }
@@ -507,9 +559,23 @@
                         if(data.isPumpOn) { btn.classList.add('active'); if(userRole === 'admin') txtPump.innerText = "ĐANG CHẠY"; } 
                         else { btn.classList.remove('active'); if(userRole === 'admin') txtPump.innerText = "ĐANG TẮT"; }
 
-                        const alertBox = document.getElementById('statusAlert'); const sirenTxt = document.getElementById('sirenText');
-                        if (data.isSirenOn) { alertBox.className = 'alert-box danger'; alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!"; sirenTxt.innerText = "ĐANG KÊU 🔊"; sirenTxt.style.color = "#ef4444"; sirenTxt.style.fontWeight = "bold"; } 
-                        else { alertBox.className = 'alert-box'; alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn"; sirenTxt.innerText = "Im lặng"; sirenTxt.style.color = "var(--secondary)"; }
+                        // CẬP NHẬT TRẠNG THÁI CÒI (Từ ESP gửi lên)
+                        const sirenBtn = document.getElementById('btnSiren');
+                        const sirenStatusText = document.getElementById('sirenStatusText');
+                        
+                        if (data.isSirenOn) { 
+                             sirenBtn.classList.add('active');
+                             sirenBtn.style.borderColor = "#ef4444"; // Đỏ cảnh báo
+                             sirenStatusText.innerText = "ĐANG HÚ!";
+                             sirenStatusText.style.color = "#ef4444";
+                             sirenStatusText.style.fontWeight = "bold";
+                        } else { 
+                             sirenBtn.classList.remove('active');
+                             sirenBtn.style.borderColor = "transparent";
+                             sirenStatusText.innerText = "YÊN LẶNG";
+                             sirenStatusText.style.color = "var(--secondary)";
+                             sirenStatusText.style.fontWeight = "normal";
+                        }
                     } catch(e){ console.error("Lỗi MQTT:", e); }
                 }
 
