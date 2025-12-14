@@ -713,14 +713,21 @@
                     const data = JSON.parse(msg.payloadString);
                     console.log("Data:", data);
 
-                    // 1. Cập nhật Mực nước
-                    document.getElementById('waterLevelText').innerText = data.waterLevel + "%";
+                    // --- CHUYỂN ĐỔI SANG CM ---
+                    const MAX_DEPTH = 10.2; // Độ sâu tối đa theo cấu hình ESP32
+                    let depthCM = (data.waterLevel / 100) * MAX_DEPTH;
+                    depthCM = parseFloat(depthCM.toFixed(1)); // Làm tròn 1 số thập phân
+
+                    // 1. Cập nhật Mực nước (Hiển thị CM)
+                    document.getElementById('waterLevelText').innerText = depthCM + " cm";
+                    
+                    // Vẫn giữ Gauge chạy theo % để vòng tròn hiển thị đúng tỷ lệ
                     gaugeChart.updateSeries([data.waterLevel]);
 
-                    // 2. Cập nhật Biểu đồ đường
+                    // 2. Cập nhật Biểu đồ đường (Vẽ theo CM)
                     const now = new Date().toLocaleTimeString();
                     lineChart.appendData([{
-                        data: [{ x: now, y: data.waterLevel }]
+                        data: [{ x: now, y: depthCM }]
                     }]);
 
                     // 3. Cập nhật Trạng thái Bơm
@@ -771,7 +778,7 @@
         }
 
         var lineChart = new ApexCharts(document.querySelector("#lineChart"), { 
-            series: [{name:'Nước',data:[]}], 
+            series: [{name:'Độ sâu (cm)',data:[]}], 
             chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, 
             stroke:{curve:'smooth'},
             xaxis: { type: 'category', range: 10 } 
