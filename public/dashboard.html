@@ -199,11 +199,7 @@
                             <div class="card-title" style="justify-content: center; margin-bottom: 5px;" data-i18n="gauge.title">Mực nước hiện tại</div>
                             <div id="gaugeChart" style="margin-top: -15px;"></div>
                             <div class="stat-value" id="waterLevelText" style="color: var(--primary); font-size: 32px;">0 cm</div>
-                            
-                            <div id="statusAlert" class="alert-box">
-                                <i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span>
-                            </div>
-                            
+                            <div id="statusAlert" class="alert-box"><i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span></div>
                         </div>
                         <div class="card">
                             <div class="card-title" data-i18n="controls.title">Điều khiển</div>
@@ -409,16 +405,20 @@
             const message = new Paho.MQTT.Message(newState); message.destinationName = dev.topic; client.send(message);
         }
         
-        function triggerSnapshot() {
-             if (client && client.isConnected()) {
-                 const message = new Paho.MQTT.Message("SNAP");
-                 message.destinationName = "shadowfox/camera_trigger";
-                 client.send(message);
-                 alert("📸 Đã gửi lệnh chụp ảnh!");
-                 document.getElementById('camStatusBadge').innerText = "● REQUESTING...";
-                 document.getElementById('camStatusBadge').style.background = "#eab308"; 
-             } else {
-                 alert("Lỗi: Chưa kết nối MQTT!");
+        // --- [MỚI] HÀM CHỤP ẢNH THỦ CÔNG QUA HTTP API ---
+        async function triggerSnapshot() {
+             // Gọi API báo Server bật cờ chụp, thay vì gửi MQTT trực tiếp
+             try {
+                 const res = await fetch('/api/manual-snap', { method: 'POST' });
+                 const data = await res.json();
+                 
+                 if (data.success) {
+                     alert("📸 Đã gửi lệnh! Camera sẽ chụp trong vài giây...");
+                     document.getElementById('camStatusBadge').innerText = "● REQUESTING...";
+                     document.getElementById('camStatusBadge').style.background = "#eab308"; // Màu vàng
+                 }
+             } catch (e) {
+                 alert("Lỗi kết nối Server: " + e.message);
              }
         }
         
@@ -485,13 +485,18 @@
 
             socket.on('new_snapshot', function(data) {
                 console.log("📸 Có ảnh mới!", data);
+                // 1. Thay đổi nội dung của Badge
                 const badge = document.getElementById('camStatusBadge');
                 badge.innerText = "📸 ẢNH MỚI";
                 badge.className = "live-badge alert"; 
 
+                // 2. Cập nhật ảnh
                 const img = document.getElementById('eventImage');
                 img.src = data.url + "?t=" + new Date().getTime();
+                
+                // 3. Cập nhật giờ
                 document.getElementById('eventTime').innerText = "Chụp lúc: " + data.time;
+                
                 addLogRecord("📸 ĐÃ CHỤP ẢNH", "Camera gửi ảnh về Server", "Thành công", "ok");
             });
 
@@ -582,6 +587,7 @@
                     if (dev.topic === topic) {
                         if (dev.type === 'sensor') { document.getElementById(`val-${index}`).innerText = payload; } 
                         else if (dev.type === 'switch') { 
+                            // Nếu trạng thái thay đổi thì ghi log
                             if (dev.value !== payload) {
                                 addLogRecord("⚡ THIẾT BỊ MỞ RỘNG", `${dev.name} đã chuyển sang ${payload}`, "OK", "ok");
                             }
