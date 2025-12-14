@@ -405,9 +405,7 @@
             const message = new Paho.MQTT.Message(newState); message.destinationName = dev.topic; client.send(message);
         }
         
-        // --- [MỚI] HÀM CHỤP ẢNH THỦ CÔNG QUA HTTP API ---
         async function triggerSnapshot() {
-             // Gọi API báo Server bật cờ chụp, thay vì gửi MQTT trực tiếp
              try {
                  const res = await fetch('/api/manual-snap', { method: 'POST' });
                  const data = await res.json();
@@ -415,7 +413,7 @@
                  if (data.success) {
                      alert("📸 Đã gửi lệnh! Camera sẽ chụp trong vài giây...");
                      document.getElementById('camStatusBadge').innerText = "● REQUESTING...";
-                     document.getElementById('camStatusBadge').style.background = "#eab308"; // Màu vàng
+                     document.getElementById('camStatusBadge').style.background = "#eab308";
                  }
              } catch (e) {
                  alert("Lỗi kết nối Server: " + e.message);
@@ -485,18 +483,12 @@
 
             socket.on('new_snapshot', function(data) {
                 console.log("📸 Có ảnh mới!", data);
-                // 1. Thay đổi nội dung của Badge
                 const badge = document.getElementById('camStatusBadge');
                 badge.innerText = "📸 ẢNH MỚI";
                 badge.className = "live-badge alert"; 
-
-                // 2. Cập nhật ảnh
                 const img = document.getElementById('eventImage');
                 img.src = data.url + "?t=" + new Date().getTime();
-                
-                // 3. Cập nhật giờ
                 document.getElementById('eventTime').innerText = "Chụp lúc: " + data.time;
-                
                 addLogRecord("📸 ĐÃ CHỤP ẢNH", "Camera gửi ảnh về Server", "Thành công", "ok");
             });
 
@@ -529,6 +521,32 @@
                 const topic = msg.destinationName;
                 const payload = msg.payloadString;
 
+                // --- [MỚI] XỬ LÝ ẢNH NHẬN ĐƯỢC TỪ MQTT ---
+                if (topic === "shadowfox/cam_data") {
+                    try {
+                        const data = JSON.parse(payload);
+                        console.log("📸 Nhận ảnh từ MQTT!");
+                        
+                        // Cập nhật thẻ img với chuỗi Base64
+                        const img = document.getElementById('eventImage');
+                        img.src = data.image; 
+
+                        // Hiển thị Badge thông báo
+                        const badge = document.getElementById('camStatusBadge');
+                        badge.innerText = "📸 ẢNH MQTT";
+                        badge.className = "live-badge alert";
+                        
+                        // Cập nhật thời gian
+                        const nowStr = new Date().toLocaleTimeString('vi-VN');
+                        document.getElementById('eventTime').innerText = "Mới nhất: " + nowStr;
+                        
+                        // Ghi log vào bảng
+                        addLogRecord("📸 MQTT SNAPSHOT", "Nhận ảnh thành công", "OK", "ok");
+                        
+                    } catch (e) { console.error("Lỗi parse ảnh:", e); }
+                    return; // Dừng, không chạy tiếp xuống dưới
+                }
+
                 if (topic === mqttTopic) {
                     try { 
                         const data = JSON.parse(payload);
@@ -552,30 +570,24 @@
                         // CẬP NHẬT TRẠNG THÁI CÒI (Từ ESP gửi lên)
                         const sirenBtn = document.getElementById('btnSiren');
                         const sirenStatusText = document.getElementById('sirenStatusText');
-                        
-                        // --- [SỬA LỖI] PHẦN QUAN TRỌNG ĐỂ HIỆN CẢNH BÁO AN TOÀN ---
                         const alertBox = document.getElementById('statusAlert'); // Lấy lại tham chiếu đúng
                         
                         if (data.isSirenOn) { 
-                             // Cập nhật nút còi
                              sirenBtn.classList.add('active');
                              sirenBtn.style.borderColor = "#ef4444"; 
                              sirenStatusText.innerText = "ĐANG HÚ!";
                              sirenStatusText.style.color = "#ef4444";
                              sirenStatusText.style.fontWeight = "bold";
 
-                             // Cập nhật hộp cảnh báo (Đã bị thiếu trước đó)
                              alertBox.className = 'alert-box danger';
                              alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!";
                         } else { 
-                             // Cập nhật nút còi
                              sirenBtn.classList.remove('active');
                              sirenBtn.style.borderColor = "transparent";
                              sirenStatusText.innerText = "YÊN LẶNG";
                              sirenStatusText.style.color = "var(--secondary)";
                              sirenStatusText.style.fontWeight = "normal";
 
-                             // Cập nhật hộp an toàn
                              alertBox.className = 'alert-box';
                              alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn";
                         }
@@ -587,7 +599,6 @@
                     if (dev.topic === topic) {
                         if (dev.type === 'sensor') { document.getElementById(`val-${index}`).innerText = payload; } 
                         else if (dev.type === 'switch') { 
-                            // Nếu trạng thái thay đổi thì ghi log
                             if (dev.value !== payload) {
                                 addLogRecord("⚡ THIẾT BỊ MỞ RỘNG", `${dev.name} đã chuyển sang ${payload}`, "OK", "ok");
                             }
@@ -600,7 +611,20 @@
                 });
             };
 
-            client.connect({ onSuccess: () => { client.subscribe(mqttTopic); customDevices.forEach(dev => { client.subscribe(dev.topic); }); document.getElementById('mqttStatus').className = 'iot-status connected'; document.getElementById('mqttText').innerText="Đã kết nối"; }, onFailure: (e) => { console.log("Lỗi:", e); document.getElementById('mqttText').innerText="Lỗi kết nối"; }, useSSL: true }); 
+            client.connect({ 
+                onSuccess: () => { 
+                    client.subscribe(mqttTopic); 
+                    client.subscribe("shadowfox/cam_data"); // <--- [MỚI] Đăng ký kênh nhận ảnh
+                    customDevices.forEach(dev => { client.subscribe(dev.topic); }); 
+                    document.getElementById('mqttStatus').className = 'iot-status connected'; 
+                    document.getElementById('mqttText').innerText="Đã kết nối"; 
+                }, 
+                onFailure: (e) => { 
+                    console.log("Lỗi:", e); 
+                    document.getElementById('mqttText').innerText="Lỗi kết nối"; 
+                }, 
+                useSSL: true 
+            }); 
         }
 
         var lineChart = new ApexCharts(document.querySelector("#lineChart"), { series: [{name:'Độ sâu (cm)',data:[]}], chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, stroke:{curve:'smooth'}, xaxis: { type: 'category', range: 10 } }); lineChart.render();
