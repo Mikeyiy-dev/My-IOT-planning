@@ -100,6 +100,7 @@
         .form-select { padding: 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; color: var(--text-main); font-family: 'Inter'; font-size: 14px; background-color: var(--bg-card); cursor: pointer; }
         
         @keyframes flashRed { 0% { background: #ef4444; } 50% { background: #b91c1c; } 100% { background: #ef4444; } }
+
         /* MODAL STYLES */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .modal-content { background-color: var(--bg-card); margin: 10% auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: fadeIn 0.3s; position: relative; }
@@ -198,7 +199,11 @@
                             <div class="card-title" style="justify-content: center; margin-bottom: 5px;" data-i18n="gauge.title">Mực nước hiện tại</div>
                             <div id="gaugeChart" style="margin-top: -15px;"></div>
                             <div class="stat-value" id="waterLevelText" style="color: var(--primary); font-size: 32px;">0 cm</div>
-                            <div id="statusAlert" class="alert-box"><i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span></div>
+                            
+                            <div id="statusAlert" class="alert-box">
+                                <i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span>
+                            </div>
+                            
                         </div>
                         <div class="card">
                             <div class="card-title" data-i18n="controls.title">Điều khiển</div>
@@ -417,27 +422,13 @@
              }
         }
         
-        // [MỚI] HÀM BẬT/TẮT CÒI THỦ CÔNG
         async function toggleSiren() {
              if (userRole !== 'admin') return;
-             
-             // Kiểm tra trạng thái hiện tại (active class)
              const btn = document.getElementById('btnSiren');
              const isCurrentlyOn = btn.classList.contains('active');
              const action = isCurrentlyOn ? 'OFF' : 'ON';
-             
-             // Cập nhật UI tạm thời
              document.getElementById('sirenStatusText').innerText = "Đang gửi...";
              
-             // Gửi yêu cầu lên Server (Cần server hỗ trợ endpoint này, hoặc dùng chung endpoint thiết bị)
-             // Ở đây ta tái sử dụng endpoint bơm nhưng đổi device thành 'siren' nếu server hỗ trợ
-             // HOẶC gọi một endpoint mới. Để an toàn, ta giả lập gọi endpoint 'control-pump' nhưng với device 'siren'
-             // Tuy nhiên server code cũ chỉ hardcode device='pump'.
-             // Giải pháp: Ta sẽ gọi API control-pump nhưng sửa body (NẾU server đã được update để đọc body.device)
-             // NẾU CHƯA UPDATE SERVER: Bạn cần thêm logic vào server.js để xử lý device 'siren'.
-             // Tạm thời tôi sẽ gửi request với hy vọng bạn đã update server, hoặc dùng MQTT trực tiếp từ client (kém bảo mật hơn nhưng nhanh).
-             
-             // CÁCH 1: DÙNG API (Khuyên dùng - Cần update Server)
              const res = await fetchWithAuth('/api/control-siren', { 
                  method: 'POST', 
                  body: JSON.stringify({ action: action }) 
@@ -447,7 +438,6 @@
                  const data = await res.json();
                  if(data.success) {
                      console.log("Server đã gửi lệnh còi:", action);
-                     // Cập nhật UI sau khi thành công
                      if(action === 'ON') {
                         btn.classList.add('active');
                         document.getElementById('sirenStatusText').innerText = "MANUAL ON";
@@ -495,18 +485,13 @@
 
             socket.on('new_snapshot', function(data) {
                 console.log("📸 Có ảnh mới!", data);
-                // 1. Thay đổi nội dung của Badge
                 const badge = document.getElementById('camStatusBadge');
                 badge.innerText = "📸 ẢNH MỚI";
                 badge.className = "live-badge alert"; 
 
-                // 2. Cập nhật ảnh
                 const img = document.getElementById('eventImage');
                 img.src = data.url + "?t=" + new Date().getTime();
-                
-                // 3. Cập nhật giờ
                 document.getElementById('eventTime').innerText = "Chụp lúc: " + data.time;
-                
                 addLogRecord("📸 ĐÃ CHỤP ẢNH", "Camera gửi ảnh về Server", "Thành công", "ok");
             });
 
@@ -563,18 +548,31 @@
                         const sirenBtn = document.getElementById('btnSiren');
                         const sirenStatusText = document.getElementById('sirenStatusText');
                         
+                        // --- [SỬA LỖI] PHẦN QUAN TRỌNG ĐỂ HIỆN CẢNH BÁO AN TOÀN ---
+                        const alertBox = document.getElementById('statusAlert'); // Lấy lại tham chiếu đúng
+                        
                         if (data.isSirenOn) { 
+                             // Cập nhật nút còi
                              sirenBtn.classList.add('active');
-                             sirenBtn.style.borderColor = "#ef4444"; // Đỏ cảnh báo
+                             sirenBtn.style.borderColor = "#ef4444"; 
                              sirenStatusText.innerText = "ĐANG HÚ!";
                              sirenStatusText.style.color = "#ef4444";
                              sirenStatusText.style.fontWeight = "bold";
+
+                             // Cập nhật hộp cảnh báo (Đã bị thiếu trước đó)
+                             alertBox.className = 'alert-box danger';
+                             alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!";
                         } else { 
+                             // Cập nhật nút còi
                              sirenBtn.classList.remove('active');
                              sirenBtn.style.borderColor = "transparent";
                              sirenStatusText.innerText = "YÊN LẶNG";
                              sirenStatusText.style.color = "var(--secondary)";
                              sirenStatusText.style.fontWeight = "normal";
+
+                             // Cập nhật hộp an toàn
+                             alertBox.className = 'alert-box';
+                             alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn";
                         }
                     } catch(e){ console.error("Lỗi MQTT:", e); }
                 }
@@ -584,7 +582,6 @@
                     if (dev.topic === topic) {
                         if (dev.type === 'sensor') { document.getElementById(`val-${index}`).innerText = payload; } 
                         else if (dev.type === 'switch') { 
-                            // Nếu trạng thái thay đổi thì ghi log
                             if (dev.value !== payload) {
                                 addLogRecord("⚡ THIẾT BỊ MỞ RỘNG", `${dev.name} đã chuyển sang ${payload}`, "OK", "ok");
                             }
