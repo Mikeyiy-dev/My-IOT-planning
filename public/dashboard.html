@@ -12,71 +12,17 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-light: #e0e7ff;
-            --secondary: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-main: #1f2937;
-            --text-light: #9ca3af;
-            --sidebar-w: 260px;
-            --radius: 20px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        /* DARK MODE */
-        body.dark-mode {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f1f5f9;
-            --text-light: #94a3b8;
-            --primary-light: #312e81;
-            --secondary: #94a3b8;
-        }
-        body.dark-mode .sidebar, body.dark-mode .content-container {
-            background: rgba(30, 41, 59, 0.95);
-            border-color: rgba(255,255,255,0.1);
-        }
+        :root { --primary: #4f46e5; --primary-light: #e0e7ff; --secondary: #64748b; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg-body: #f3f4f6; --bg-card: #ffffff; --text-main: #1f2937; --text-light: #9ca3af; --sidebar-w: 260px; --radius: 20px; --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        body.dark-mode { --bg-body: #0f172a; --bg-card: #1e293b; --text-main: #f1f5f9; --text-light: #94a3b8; --primary-light: #312e81; --secondary: #94a3b8; }
+        body.dark-mode .sidebar, body.dark-mode .content-container { background: rgba(30, 41, 59, 0.95); border-color: rgba(255,255,255,0.1); }
         body.dark-mode .menu-item:hover { background: #334155; }
-        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td, body.dark-mode .form-select, body.dark-mode .modal-content {
-            border-color: #334155;
-            background: #1e293b; color: #f1f5f9;
-        }
+        body.dark-mode .card, body.dark-mode .input-modern, body.dark-mode .modern-table th, body.dark-mode .modern-table td, body.dark-mode .form-select, body.dark-mode .modal-content { border-color: #334155; background: #1e293b; color: #f1f5f9; }
         body.dark-mode .upload-zone { background: #1e293b; border-color: #475569; }
         body.dark-mode .pump-card:hover { background: #334155; }
-
-        /* --- CHẾ ĐỘ TRONG SUỐT (GLASSMORPHISM) --- */
-        body.transparent-ui .sidebar,
-        body.transparent-ui .content-container,
-        body.transparent-ui .card,
-        body.transparent-ui .modal-content {
-            background: rgba(255, 255, 255, 0.25) !important;
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-        }
-        body.dark-mode.transparent-ui .sidebar,
-        body.dark-mode.transparent-ui .content-container,
-        body.dark-mode.transparent-ui .card,
-        body.dark-mode.transparent-ui .modal-content {
-            background: rgba(0, 0, 0, 0.4) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
+        body.transparent-ui .sidebar, body.transparent-ui .content-container, body.transparent-ui .card, body.transparent-ui .modal-content { background: rgba(255, 255, 255, 0.25) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); }
+        body.dark-mode.transparent-ui .sidebar, body.dark-mode.transparent-ui .content-container, body.dark-mode.transparent-ui .card, body.dark-mode.transparent-ui .modal-content { background: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-        
-        body { 
-            background-color: var(--bg-body); 
-            background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop');
-            background-size: cover; background-position: center; background-attachment: fixed;
-            display: flex; min-height: 100vh; color: var(--text-main);
-        }
-
-        /* SIDEBAR */
+        body { background-color: var(--bg-body); background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop'); background-size: cover; background-position: center; background-attachment: fixed; display: flex; min-height: 100vh; color: var(--text-main); }
         .sidebar { width: var(--sidebar-w); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); height: 96vh; margin: 2vh; border-radius: var(--radius); display: flex; flex-direction: column; box-shadow: var(--shadow); z-index: 100; border: 1px solid rgba(255,255,255,0.5); }
         .logo-box { padding: 25px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--primary-light); }
         .logo-img { width: 45px; height: auto; max-height: 45px; object-fit: contain; }
@@ -108,10 +54,13 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .card-title { font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .card-title i { color: var(--primary); font-size: 20px; }
-        .camera-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; position: relative; }
-        .camera-container img { width: 100%; height: 100%; object-fit: cover; }
-        .live-badge { position: absolute; top: 12px; left: 12px; background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        
+        .camera-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .camera-container img { width: 100%; height: 100%; object-fit: contain; }
+        .live-badge { position: absolute; top: 12px; left: 12px; background: #64748b; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; z-index: 10; }
+        .live-badge.alert { background: #ef4444; animation: flashRed 1s infinite; }
         .live-badge::before { content:''; width: 6px; height: 6px; background: white; border-radius: 50%; }
+
         .pump-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; transition: 0.3s; cursor: pointer; border: 2px solid transparent; }
         .pump-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .pump-icon { width: 70px; height: 70px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 15px; transition: 0.3s; }
@@ -150,16 +99,12 @@
         input:checked + .slider:before { transform: translateX(24px); }
         .form-select { padding: 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; color: var(--text-main); font-family: 'Inter'; font-size: 14px; background-color: var(--bg-card); cursor: pointer; }
         
-        /* ANIMATION KHUNG ẢNH */
-        @keyframes flashBorder { 0% { border-color: #ef4444; } 50% { border-color: transparent; } 100% { border-color: #ef4444; } }
-
-        /* [MỚI] STYLES CHO TÍNH NĂNG THÊM THIẾT BỊ */
+        @keyframes flashRed { 0% { background: #ef4444; } 50% { background: #b91c1c; } 100% { background: #ef4444; } }
+        /* MODAL STYLES */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .modal-content { background-color: var(--bg-card); margin: 10% auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: fadeIn 0.3s; position: relative; }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; position: absolute; top: 10px; right: 15px; }
         .close:hover, .close:focus { color: var(--danger); text-decoration: none; cursor: pointer; }
-        
-        /* Nút nổi (Floating Button) */
         .fab-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4); cursor: pointer; transition: 0.3s; z-index: 90; border: none; }
         .fab-btn:hover { transform: scale(1.1) rotate(90deg); }
 
@@ -197,11 +142,9 @@
             <li class="menu-item" onclick="switchTab('logs', this)">
                 <i class='bx bx-list-ul'></i> <span data-i18n="menu.logs">Nhật ký</span>
             </li>
-            
             <li class="menu-item" id="menuAdmin" onclick="switchTab('admin', this)" style="display: none;">
                 <i class='bx bx-crown'></i> <span>Quản trị viên</span>
             </li>
-
             <li class="menu-item" onclick="switchTab('account', this)">
                 <i class='bx bx-user'></i> <span data-i18n="menu.account">Tài khoản</span>
             </li>
@@ -221,7 +164,6 @@
 
     <main class="main">
         <div class="content-container">
-            
             <div class="top-header">
                 <div class="greeting">
                     <h2><span data-i18n="header.hello">Xin chào</span>, <span id="headerName" style="color: var(--primary);">Guest</span>! 👋</h2>
@@ -238,8 +180,14 @@
                     <div class="left-col">
                         <div class="card" style="padding: 0; border: none; overflow: hidden;">
                             <div class="camera-container">
-                                <div class="live-badge">● LIVE</div>
-                                <img id="camStream1" src="https://nonintoxicating-excurvate-doria.ngrok-free.dev/stream">
+                                <div class="live-badge" id="camStatusBadge">● WAIT SNAPSHOT</div>
+                                
+                                <button class="btn" onclick="triggerSnapshot()" style="position:absolute; top:12px; right:12px; padding:6px 12px; font-size:12px; background:rgba(255,255,255,0.9); color:#333; z-index:20; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
+                                    <i class='bx bxs-camera'></i> Chụp Ngay
+                                </button>
+                                
+                                <img id="eventImage" src="https://via.placeholder.com/800x450?text=Chưa+có+ảnh+sự+cố+nào" alt="Ảnh sự kiện">
+                                <div id="eventTime" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">--:--:--</div>
                             </div>
                         </div>
                         <div class="card">
@@ -248,18 +196,10 @@
                         </div>
                     </div>
                     <div class="right-col">
-                        <div class="card" id="cameraEventCard" style="display:none; border: 2px solid #ef4444; animation: flashBorder 2s infinite; margin-bottom: 25px;">
-                            <div class="card-title" style="color: #ef4444;">📸 PHÁT HIỆN SỰ CỐ!</div>
-                            <div style="width:100%; aspect-ratio:4/3; background:#000; border-radius:10px; overflow:hidden; margin-top:10px;">
-                                <img id="eventImage" src="" alt="Sự cố" style="width:100%; height:100%; object-fit:cover;">
-                            </div>
-                            <div id="eventTime" style="font-size:12px; color:#666; margin-top:5px; text-align:right;">--:--:--</div>
-                        </div>
-
                         <div class="card" style="text-align: center;">
                             <div class="card-title" style="justify-content: center; margin-bottom: 5px;" data-i18n="gauge.title">Mực nước hiện tại</div>
                             <div id="gaugeChart" style="margin-top: -15px;"></div>
-                            <div class="stat-value" id="waterLevelText" style="color: var(--primary);">0 cm</div>
+                            <div class="stat-value" id="waterLevelText" style="color: var(--primary); font-size: 32px;">0 cm</div>
                             <div id="statusAlert" class="alert-box"><i class='bx bx-loader-alt bx-spin'></i> <span data-i18n="status.waiting">Đang đợi dữ liệu...</span></div>
                         </div>
                         <div class="card">
@@ -280,8 +220,8 @@
                 <h3 style="margin: 30px 0 15px 0; font-size: 18px; color: var(--text-main); display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px;">
                     <i class='bx bx-extension'></i> Thiết bị mở rộng
                 </h3>
-                <div id="dynamic-grid" class="dashboard-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
-                    </div>
+                <div id="dynamic-grid" class="dashboard-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                </div>
             </div>
 
             <div id="tab-camera" class="tab-content">
@@ -291,56 +231,30 @@
                     </div>
                 </div>
             </div>
-
+            
             <div id="tab-logs" class="tab-content">
                 <div class="card">
                     <div class="card-header"><span class="card-title"><i class='bx bx-history'></i> <span data-i18n="logs.title">Nhật ký hoạt động</span></span>
                     <button class="btn" style="border: 1px solid #e2e8f0; padding: 8px 16px;" onclick="exportData()">Export Excel/TXT</button></div>
-                    <table class="modern-table">
-                        <thead><tr>
-                            <th data-i18n="table.time">Thời gian</th>
-                            <th data-i18n="table.event">Sự kiện</th>
-                            <th data-i18n="table.detail">Chi tiết</th>
-                            <th data-i18n="table.status">Trạng thái</th>
-                        </tr></thead><tbody id="logBody"></tbody>
-                    </table>
+                    <table class="modern-table"><thead><tr><th data-i18n="table.time">Thời gian</th><th data-i18n="table.event">Sự kiện</th><th data-i18n="table.detail">Chi tiết</th><th data-i18n="table.status">Trạng thái</th></tr></thead><tbody id="logBody"></tbody></table>
                 </div>
             </div>
 
             <div id="tab-admin" class="tab-content">
                 <div class="card">
-                    <div class="card-header">
-                        <span class="card-title"><i class='bx bx-user-voice'></i> Quản lý người dùng</span>
-                        <button class="btn btn-primary" onclick="loadUserList()" style="width: auto;">Làm mới</button>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Tên tài khoản</th>
-                                    <th>Email</th>
-                                    <th>Vai trò</th>
-                                    <th>Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="userListBody">
-                                <tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="card-header"><span class="card-title"><i class='bx bx-user-voice'></i> Quản lý người dùng</span><button class="btn btn-primary" onclick="loadUserList()" style="width: auto;">Làm mới</button></div>
+                    <div style="overflow-x: auto;"><table class="modern-table"><thead><tr><th>Tên tài khoản</th><th>Email</th><th>Vai trò</th><th>Hành động</th></tr></thead><tbody id="userListBody"><tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr></tbody></table></div>
                 </div>
             </div>
 
             <div id="tab-account" class="tab-content">
                 <div class="card" style="max-width: 500px; margin: 0 auto;">
                     <div class="card-header"><span class="card-title"><i class='bx bx-id-card'></i> <span data-i18n="account.title">Thông tin tài khoản</span></span></div>
-                    
                     <div style="text-align: center; margin-bottom: 20px;">
                         <img id="previewAvatar" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: contain; border: 4px solid var(--primary-light); background: #f8fafc; padding: 10px;">
                         <h2 style="margin-top: 10px;" id="previewName">User</h2>
                         <span class="tag ok" id="previewRole">Viewer</span>
                     </div>
-                    
                     <div style="margin-bottom: 20px;">
                         <label style="font-size: 13px; font-weight: 600; color: var(--secondary);" data-i18n="account.choose_avatar">Chọn nhân vật đại diện:</label>
                         <div class="avatar-grid" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
@@ -356,14 +270,12 @@
                             <div class="avatar-item" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/616/616565.png', this)"><img src="https://cdn-icons-png.flaticon.com/512/616/616565.png" title="Gazelle"></div>
                         </div>
                     </div>
-
                     <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
                         <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-main);">Đổi mật khẩu</h4>
                         <input type="password" id="oldPass" class="input-modern" placeholder="Mật khẩu hiện tại">
                         <input type="password" id="newPass" class="input-modern" placeholder="Mật khẩu mới (ít nhất 6 ký tự)">
                         <button class="btn btn-primary" onclick="changePassword()" style="background: #64748b; margin-top: 10px; width: 100%;">Cập nhật mật khẩu</button>
                     </div>
-
                     <button class="btn btn-primary" onclick="saveProfile()" data-i18n="btn.save" style="margin-top: 20px;">Lưu thay đổi</button>
                     <button class="btn btn-danger" onclick="logout()" data-i18n="btn.logout">Đăng xuất</button>
                 </div>
@@ -372,10 +284,8 @@
             <div id="tab-settings" class="tab-content">
                 <div class="card" style="max-width: 650px; margin: 0 auto;">
                     <div class="card-header"><span class="card-title"><i class='bx bx-cog'></i> <span data-i18n="settings.title">Cài đặt hệ thống</span></span></div>
-                    
                     <div class="setting-section">
                         <div class="setting-title" data-i18n="settings.interface">Giao diện</div>
-                        
                         <div class="setting-row">
                             <div class="setting-info"><h4 data-i18n="settings.language">Ngôn ngữ</h4><p data-i18n="settings.language_desc">Chọn ngôn ngữ hiển thị.</p></div>
                             <select class="form-select" id="langSelect" onchange="changeLanguage(this.value)">
@@ -383,23 +293,14 @@
                                 <option value="en">English</option>
                             </select>
                         </div>
-                        
                         <div class="setting-row">
                             <div class="setting-info"><h4 data-i18n="settings.dark_mode">Chế độ Tối</h4><p data-i18n="settings.dark_mode_desc">Giao diện tối bảo vệ mắt.</p></div>
                             <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
                         </div>
-
                          <div class="setting-row">
-                            <div class="setting-info">
-                                <h4>Chế độ Trong suốt</h4>
-                                <p>Làm mờ giao diện để thấy hình nền.</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="transparentToggle" onchange="toggleTransparent()">
-                                <span class="slider"></span>
-                            </label>
+                            <div class="setting-info"><h4>Chế độ Trong suốt</h4><p>Làm mờ giao diện để thấy hình nền.</p></div>
+                            <label class="switch"><input type="checkbox" id="transparentToggle" onchange="toggleTransparent()"><span class="slider"></span></label>
                         </div>
-                        
                         <div class="setting-row">
                             <div class="setting-info"><h4 data-i18n="settings.wallpaper">Hình nền</h4><p data-i18n="settings.wallpaper_desc">Tải ảnh từ máy tính.</p></div>
                             <div>
@@ -415,91 +316,56 @@
         </div>
     </main>
 
-    <button class="fab-btn" onclick="openAddDeviceModal()" title="Thêm thiết bị mới">
-        <i class='bx bx-plus'></i>
-    </button>
+    <button class="fab-btn" onclick="openAddDeviceModal()" title="Thêm thiết bị mới"><i class='bx bx-plus'></i></button>
 
     <div id="addDeviceModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeAddDeviceModal()">&times;</span>
             <h3 style="margin-bottom: 20px; color: var(--primary);">Thêm thiết bị mới</h3>
-            
             <label style="font-size: 13px; font-weight: 600;">Tên thiết bị:</label>
-            <input type="text" id="newDevName" class="input-modern" placeholder="Ví dụ: Đèn sân vườn, Nhiệt độ phòng...">
-            
+            <input type="text" id="newDevName" class="input-modern" placeholder="Ví dụ: Đèn sân vườn...">
             <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">Loại thiết bị:</label>
             <select id="newDevType" class="form-select" style="width:100%; margin-top:5px;">
-                <option value="sensor">Cảm biến (Chỉ hiển thị)</option>
-                <option value="switch">Công tắc (Bật/Tắt)</option>
+                <option value="sensor">Cảm biến</option>
+                <option value="switch">Công tắc</option>
             </select>
-
-            <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">MQTT Topic (Quan trọng):</label>
+            <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">MQTT Topic:</label>
             <input type="text" id="newDevTopic" class="input-modern" placeholder="Ví dụ: home/light1">
-            <span style="font-size:11px; color:#666;">*Topic này phải khớp với code nạp vào ESP32 mới</span>
-            
             <label style="font-size: 13px; font-weight: 600; display:block; margin-top:10px;">Đơn vị (nếu là cảm biến):</label>
-            <input type="text" id="newDevUnit" class="input-modern" placeholder="Ví dụ: °C, %, Lux...">
-
+            <input type="text" id="newDevUnit" class="input-modern" placeholder="Ví dụ: °C, %...">
             <button class="btn btn-primary" onclick="addNewDevice()" style="margin-top: 20px;">Lưu thiết bị</button>
         </div>
     </div>
 
     <script>
-        // --- 1. CẤU HÌNH ---
         const mqttHost = "broker.hivemq.com"; 
         const mqttPort = 8884; 
         const mqttTopic = "shadowfox/system_data";
         
-        // [MỚI] KHỞI TẠO SOCKET KẾT NỐI SERVER
         const socket = io(); 
-
         let client = null;
         let lastPumpState = false; 
         
-        // --- [MỚI] QUẢN LÝ THIẾT BỊ ĐỘNG (Lưu trong trình duyệt) ---
         let customDevices = []; 
 
         function loadCustomDevices() {
             const saved = localStorage.getItem('customDevices');
-            if (saved) {
-                customDevices = JSON.parse(saved);
-                renderCustomDevices();
-            }
+            if (saved) { customDevices = JSON.parse(saved); renderCustomDevices(); }
         }
 
         function renderCustomDevices() {
             const container = document.getElementById('dynamic-grid');
-            container.innerHTML = ''; // Xóa cũ vẽ lại
+            container.innerHTML = ''; 
 
             customDevices.forEach((dev, index) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                
-                // Nút xóa thiết bị nhỏ ở góc
                 const deleteBtn = `<span style="position:absolute; top:10px; right:10px; cursor:pointer; color:#ef4444;" onclick="removeDevice(${index})"><i class='bx bx-x'></i></span>`;
 
                 if (dev.type === 'sensor') {
-                    // GIAO DIỆN CẢM BIẾN
-                    card.innerHTML = `
-                        ${deleteBtn}
-                        <div class="card-title" style="justify-content: center;">${dev.name}</div>
-                        <div style="text-align: center; margin: 20px 0;">
-                            <div class="stat-value" id="val-${index}" style="color: var(--primary);">--</div>
-                            <div style="color: var(--secondary); font-size: 14px;">${dev.unit}</div>
-                        </div>
-                        <div style="font-size: 11px; color: #9ca3af; text-align: center;">Topic: ${dev.topic}</div>
-                    `;
+                    card.innerHTML = `${deleteBtn}<div class="card-title" style="justify-content: center;">${dev.name}</div><div style="text-align: center; margin: 20px 0;"><div class="stat-value" id="val-${index}" style="color: var(--primary);">--</div><div style="color: var(--secondary); font-size: 14px;">${dev.unit}</div></div><div style="font-size: 11px; color: #9ca3af; text-align: center;">Topic: ${dev.topic}</div>`;
                 } else {
-                    // GIAO DIỆN CÔNG TẮC
-                    card.innerHTML = `
-                        ${deleteBtn}
-                        <div class="card-title" style="justify-content: center;">${dev.name}</div>
-                        <div class="pump-card" id="btn-${index}" onclick="toggleCustomDevice(${index})">
-                            <div class="pump-icon"><i class='bx bx-power-off'></i></div>
-                            <div style="font-weight: 600; margin-top: 10px;" id="txt-${index}">OFF</div>
-                        </div>
-                        <div style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px;">Topic: ${dev.topic}</div>
-                    `;
+                    card.innerHTML = `${deleteBtn}<div class="card-title" style="justify-content: center;">${dev.name}</div><div class="pump-card" id="btn-${index}" onclick="toggleCustomDevice(${index})"><div class="pump-icon"><i class='bx bx-power-off'></i></div><div style="font-weight: 600; margin-top: 10px;" id="txt-${index}">OFF</div></div><div style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 10px;">Topic: ${dev.topic}</div>`;
                 }
                 container.appendChild(card);
             });
@@ -515,20 +381,10 @@
             const unit = document.getElementById('newDevUnit').value;
 
             if(!name || !topic) { alert("Vui lòng nhập tên và Topic!"); return; }
-
             customDevices.push({ name, type, topic, unit, value: 'OFF' });
             localStorage.setItem('customDevices', JSON.stringify(customDevices));
-            
-            // Subscribe topic mới ngay lập tức
-            if(client && client.isConnected()) {
-                client.subscribe(topic);
-            }
-
-            renderCustomDevices();
-            closeAddDeviceModal();
-            // Reset form
-            document.getElementById('newDevName').value = '';
-            document.getElementById('newDevTopic').value = '';
+            if(client && client.isConnected()) client.subscribe(topic);
+            renderCustomDevices(); closeAddDeviceModal();
         }
 
         function removeDevice(index) {
@@ -542,218 +398,81 @@
         function toggleCustomDevice(index) {
             const dev = customDevices[index];
             const newState = (dev.value === 'ON') ? 'OFF' : 'ON';
-            
-            // Cập nhật giao diện ngay lập tức cho mượt
             dev.value = newState;
             const btn = document.getElementById(`btn-${index}`);
             const txt = document.getElementById(`txt-${index}`);
-            
-            if(newState === 'ON') { btn.classList.add('active'); txt.innerText = "ON"; }
-            else { btn.classList.remove('active'); txt.innerText = "OFF"; }
-
-            // Gửi MQTT
-            const message = new Paho.MQTT.Message(newState);
-            message.destinationName = dev.topic;
-            client.send(message);
+            if(newState === 'ON') { btn.classList.add('active'); txt.innerText = "ON"; } else { btn.classList.remove('active'); txt.innerText = "OFF"; }
+            const message = new Paho.MQTT.Message(newState); message.destinationName = dev.topic; client.send(message);
+        }
+        
+        // --- [MỚI] HÀM CHỤP ẢNH THỦ CÔNG ---
+        function triggerSnapshot() {
+             if (client && client.isConnected()) {
+                 // Gửi tin nhắn "SNAP" lên topic camera
+                 const message = new Paho.MQTT.Message("SNAP");
+                 message.destinationName = "shadowfox/camera_trigger";
+                 client.send(message);
+                 
+                 // Hiệu ứng nút bấm
+                 alert("📸 Đã gửi lệnh chụp ảnh!");
+                 document.getElementById('camStatusBadge').innerText = "● REQUESTING...";
+                 document.getElementById('camStatusBadge').style.background = "#eab308"; // Màu vàng
+             } else {
+                 alert("Lỗi: Chưa kết nối MQTT!");
+             }
         }
 
-        // --- MIDDLEWARE BẢO MẬT: GỌI API KÈM TOKEN ---
-        async function fetchWithAuth(url, options = {}) {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                alert("Phiên đăng nhập hết hạn hoặc chưa đăng nhập!");
-                window.location.href = 'index.html';
-                return null;
-            }
-
-            if (!options.headers) options.headers = {};
-            options.headers['Authorization'] = 'Bearer ' + token;
-            options.headers['Content-Type'] = 'application/json';
-
-            try {
-                const res = await fetch(url, options);
-                if (res.status === 401 || res.status === 403) {
-                    alert("Hết phiên làm việc, vui lòng đăng nhập lại!");
-                    localStorage.clear();
-                    window.location.href = 'index.html';
-                    return null;
-                }
-                return res;
-            } catch (err) {
-                alert("Lỗi kết nối Server!");
-                return null;
-            }
-        }
-
-        // --- HỆ THỐNG NGÔN NGỮ, KHỞI TẠO (GIỮ NGUYÊN) ---
-        const translations = {
-            vi: {
-                "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt",
-                "header.hello": "Xin chào", "iot.disconnected": "Ngắt kết nối", "iot.connected": "Đã kết nối",
-                "chart.title": "Biểu đồ mực nước", "gauge.title": "Mực nước hiện tại", "status.waiting": "Đang đợi dữ liệu...", "status.safe": "Hệ thống an toàn", "status.danger": "CẢNH BÁO NGẬP!",
-                "controls.title": "Điều khiển", "pump.name": "Máy Bơm", "pump.on": "Đang Hoạt Động", "pump.off": "Đang Tắt", "siren.label": "Trạng thái Còi hú:",
-                "logs.title": "Nhật ký hoạt động", "table.time": "Thời gian", "table.event": "Sự kiện", "table.detail": "Chi tiết", "table.status": "Trạng thái",
-                "account.title": "Thông tin tài khoản", "account.choose_avatar": "Chọn nhân vật đại diện:", 
-                "settings.title": "Cài đặt hệ thống", "settings.interface": "Giao diện", "settings.language": "Ngôn ngữ", "settings.language_desc": "Chọn ngôn ngữ hiển thị.",
-                "settings.dark_mode": "Chế độ Tối", "settings.dark_mode_desc": "Giao diện tối bảo vệ mắt.", "settings.wallpaper": "Hình nền", "settings.wallpaper_desc": "Tải ảnh từ máy tính.",
-                "btn.save": "Lưu thay đổi", "btn.logout": "Đăng xuất"
-            },
-            en: {
-                "menu.home": "Overview", "menu.camera": "Camera", "menu.logs": "Logs", "menu.account": "Account", "menu.settings": "Settings",
-                "header.hello": "Hello", "iot.disconnected": "Disconnected", "iot.connected": "Connected",
-                "chart.title": "Water Level Chart", "gauge.title": "Current Level", "status.waiting": "Waiting for data...", "status.safe": "System Safe", "status.danger": "FLOOD ALERT!",
-                "controls.title": "Controls", "pump.name": "Water Pump", "pump.on": "Running", "pump.off": "Stopped", "siren.label": "Siren Status:",
-                "logs.title": "Activity Logs", "table.time": "Time", "table.event": "Event", "table.detail": "Detail", "table.status": "Status",
-                "account.title": "Account Info", "account.choose_avatar": "Choose Avatar:",
-                "settings.title": "System Settings", "settings.interface": "Interface", "settings.language": "Language", "settings.language_desc": "Select display language.",
-                "settings.dark_mode": "Dark Mode", "settings.dark_mode_desc": "Switch to dark theme.", "settings.wallpaper": "Wallpaper", "settings.wallpaper_desc": "Upload image.",
-                "btn.save": "Save Changes", "btn.logout": "Logout"
-            }
-        };
+        async function fetchWithAuth(url, options = {}) { const token = localStorage.getItem('authToken'); if (!token) { alert("Phiên đăng nhập hết hạn!"); window.location.href = 'index.html'; return null; } if (!options.headers) options.headers = {}; options.headers['Authorization'] = 'Bearer ' + token; options.headers['Content-Type'] = 'application/json'; try { const res = await fetch(url, options); if (res.status === 401 || res.status === 403) { alert("Hết phiên làm việc!"); localStorage.clear(); window.location.href = 'index.html'; return null; } return res; } catch (err) { alert("Lỗi kết nối Server!"); return null; } }
+        const translations = { vi: { "menu.home": "Tổng quan", "menu.camera": "Camera", "menu.logs": "Nhật ký", "menu.account": "Tài khoản", "menu.settings": "Cài đặt", "header.hello": "Xin chào", "iot.disconnected": "Ngắt kết nối", "iot.connected": "Đã kết nối", "chart.title": "Biểu đồ mực nước", "gauge.title": "Mực nước hiện tại", "status.waiting": "Đang đợi dữ liệu...", "status.safe": "Hệ thống an toàn", "status.danger": "CẢNH BÁO NGẬP!", "controls.title": "Điều khiển", "pump.name": "Máy Bơm", "pump.on": "Đang Hoạt Động", "pump.off": "Đang Tắt", "siren.label": "Trạng thái Còi hú:", "logs.title": "Nhật ký hoạt động", "table.time": "Thời gian", "table.event": "Sự kiện", "table.detail": "Chi tiết", "table.status": "Trạng thái", "account.title": "Thông tin tài khoản", "account.choose_avatar": "Chọn nhân vật đại diện:", "settings.title": "Cài đặt hệ thống", "settings.interface": "Giao diện", "settings.language": "Ngôn ngữ", "settings.language_desc": "Chọn ngôn ngữ hiển thị.", "settings.dark_mode": "Chế độ Tối", "settings.dark_mode_desc": "Giao diện tối bảo vệ mắt.", "settings.wallpaper": "Hình nền", "settings.wallpaper_desc": "Tải ảnh từ máy tính.", "btn.save": "Lưu thay đổi", "btn.logout": "Đăng xuất" }, en: { "menu.home": "Overview", "menu.camera": "Camera", "menu.logs": "Logs", "menu.account": "Account", "menu.settings": "Settings", "header.hello": "Hello", "iot.disconnected": "Disconnected", "iot.connected": "Connected", "chart.title": "Water Level Chart", "gauge.title": "Current Level", "status.waiting": "Waiting for data...", "status.safe": "System Safe", "status.danger": "FLOOD ALERT!", "controls.title": "Controls", "pump.name": "Water Pump", "pump.on": "Running", "pump.off": "Stopped", "siren.label": "Siren Status:", "logs.title": "Activity Logs", "table.time": "Time", "table.event": "Event", "table.detail": "Detail", "table.status": "Status", "account.title": "Account Info", "account.choose_avatar": "Choose Avatar:", "settings.title": "System Settings", "settings.interface": "Interface", "settings.language": "Language", "settings.language_desc": "Select display language.", "settings.dark_mode": "Dark Mode", "settings.dark_mode_desc": "Switch to dark theme.", "settings.wallpaper": "Wallpaper", "settings.wallpaper_desc": "Upload image.", "btn.save": "Save Changes", "btn.logout": "Logout" } };
         let currentLang = localStorage.getItem('lang') || 'vi';
         const currentUser = localStorage.getItem('currentUser') || "Guest"; 
         let userRole = localStorage.getItem('userRole') || 'viewer';
         if (currentUser === 'Mikeyiy') userRole = 'admin';
 
-        function addLogRecord(event, detail, statusText, statusClass) {
-            const tbody = document.getElementById('logBody');
-            const row = document.createElement('tr');
-            const time = new Date().toLocaleTimeString('vi-VN');
-            row.innerHTML = `<td>${time}</td><td style="font-weight: 600;">${event}</td><td>${detail}</td><td><span class="tag ${statusClass}">${statusText}</span></td>`;
-            tbody.insertBefore(row, tbody.firstChild);
-            if(tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
-        }
+        function addLogRecord(event, detail, statusText, statusClass) { const tbody = document.getElementById('logBody'); const row = document.createElement('tr'); const time = new Date().toLocaleTimeString('vi-VN'); row.innerHTML = `<td>${time}</td><td style="font-weight: 600;">${event}</td><td>${detail}</td><td><span class="tag ${statusClass}">${statusText}</span></td>`; tbody.insertBefore(row, tbody.firstChild); if(tbody.children.length > 50) tbody.removeChild(tbody.lastChild); }
 
         function init() {
-            document.getElementById('sidebarName').innerText = currentUser;
-            document.getElementById('headerName').innerText = currentUser;
-            document.getElementById('sidebarRole').innerText = userRole.toUpperCase();
-            document.getElementById('previewName').innerText = currentUser;
-            document.getElementById('previewRole').innerText = userRole.toUpperCase();
-            let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png";
-            document.getElementById('sidebarAvatar').src = currentAvatar;
-            document.getElementById('previewAvatar').src = currentAvatar;
-
-            const pumpBtn = document.getElementById('btnPump');
-            const adminMenu = document.getElementById('menuAdmin');
-            if (userRole === 'admin') {
-                pumpBtn.style.opacity = '1'; pumpBtn.style.cursor = 'pointer';
-                if (currentUser === 'Mikeyiy') { if(adminMenu) adminMenu.style.display = 'flex'; } else { if(adminMenu) adminMenu.style.display = 'none'; }
-            } else {
-                pumpBtn.style.opacity = '0.5'; pumpBtn.style.cursor = 'not-allowed';
-                pumpBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); };
-                document.getElementById('pumpText').innerText = "CHỈ XEM (VIEW ONLY)";
-                if(adminMenu) adminMenu.style.display = 'none';
-            }
-
-            document.getElementById('langSelect').value = currentLang;
-            changeLanguage(currentLang); 
+            document.getElementById('sidebarName').innerText = currentUser; document.getElementById('headerName').innerText = currentUser; document.getElementById('sidebarRole').innerText = userRole.toUpperCase(); document.getElementById('previewName').innerText = currentUser; document.getElementById('previewRole').innerText = userRole.toUpperCase(); let currentAvatar = localStorage.getItem('currentAvatar') || "https://cdn-icons-png.flaticon.com/512/616/616408.png"; document.getElementById('sidebarAvatar').src = currentAvatar; document.getElementById('previewAvatar').src = currentAvatar;
+            const pumpBtn = document.getElementById('btnPump'); const adminMenu = document.getElementById('menuAdmin'); if (userRole === 'admin') { pumpBtn.style.opacity = '1'; pumpBtn.style.cursor = 'pointer'; if (currentUser === 'Mikeyiy') { if(adminMenu) adminMenu.style.display = 'flex'; } else { if(adminMenu) adminMenu.style.display = 'none'; } } else { pumpBtn.style.opacity = '0.5'; pumpBtn.style.cursor = 'not-allowed'; pumpBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); alert("⛔ CHỈ XEM: Bạn không có quyền điều khiển!"); }; document.getElementById('pumpText').innerText = "CHỈ XEM (VIEW ONLY)"; if(adminMenu) adminMenu.style.display = 'none'; }
+            document.getElementById('langSelect').value = currentLang; changeLanguage(currentLang); 
             if(localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
             if(localStorage.getItem('transparentMode') === 'true') { document.body.classList.add('transparent-ui'); document.getElementById('transparentToggle').checked = true; }
-            const savedBg = localStorage.getItem('modern_bg');
-            if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
+            const savedBg = localStorage.getItem('modern_bg'); if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
 
-            // [MỚI] Load danh sách thiết bị
             loadCustomDevices();
 
             socket.on('new_snapshot', function(data) {
-                console.log("📸 Có ảnh mới từ Camera!", data);
-                const card = document.getElementById('cameraEventCard');
-                card.style.display = 'block';
+                console.log("📸 Có ảnh mới!", data);
+                // 1. Thay đổi nội dung của Badge
+                const badge = document.getElementById('camStatusBadge');
+                badge.innerText = "📸 ẢNH MỚI";
+                badge.className = "live-badge alert"; 
+
+                // 2. Cập nhật ảnh
                 const img = document.getElementById('eventImage');
                 img.src = data.url + "?t=" + new Date().getTime();
+                
+                // 3. Cập nhật giờ
                 document.getElementById('eventTime').innerText = "Chụp lúc: " + data.time;
-                addLogRecord("📸 ĐÃ CHỤP ẢNH", "Phát hiện sự cố ngập, đã lưu ảnh", "Đã lưu", "warn");
+                
+                addLogRecord("📸 ĐÃ CHỤP ẢNH", "Camera gửi ảnh về Server", "Thành công", "ok");
             });
 
             connectMQTT();
-            updateTime();
-            setInterval(updateTime, 1000);
+            updateTime(); setInterval(updateTime, 1000);
         }
 
-        // --- CÁC HÀM HỖ TRỢ (GIỮ NGUYÊN) ---
-        function changeLanguage(lang) {
-            currentLang = lang; localStorage.setItem('lang', lang);
-            const elements = document.querySelectorAll('[data-i18n]');
-            elements.forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) el.innerText = translations[lang][key];
-            });
-        }
+        function changeLanguage(lang) { currentLang = lang; localStorage.setItem('lang', lang); const elements = document.querySelectorAll('[data-i18n]'); elements.forEach(el => { const key = el.getAttribute('data-i18n'); if (translations[lang][key]) el.innerText = translations[lang][key]; }); }
         function toggleDarkMode() { const d = document.getElementById('darkModeToggle').checked; if(d) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode'); localStorage.setItem('darkMode', d); }
         function toggleTransparent() { const isTransparent = document.getElementById('transparentToggle').checked; if (isTransparent) document.body.classList.add('transparent-ui'); else document.body.classList.remove('transparent-ui'); localStorage.setItem('transparentMode', isTransparent); }
         function changeBg(e) { const file = e.target.files[0]; if(file){ const reader = new FileReader(); reader.onload = (evt) => { const bgData = evt.target.result; document.body.style.backgroundImage = `url('${bgData}')`; localStorage.setItem('modern_bg', bgData); }; reader.readAsDataURL(file); } }
         function resetBg() { localStorage.removeItem('modern_bg'); document.body.style.backgroundImage = "url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2670&auto=format&fit=crop')"; }
         
-        async function togglePump() { 
-             if (userRole !== 'admin') return;
-             const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
-             const action = isCurrentlyOn ? 'OFF' : 'ON';
-             document.getElementById('pumpText').innerText = "Đang gửi...";
-             const res = await fetchWithAuth('/api/control-pump', { method: 'POST', body: JSON.stringify({ action }) });
-             if (res) { const data = await res.json(); if(data.success) console.log("Sent:", action); else alert("Lỗi: " + data.message); }
-        }
-        async function changePassword() { 
-            const oldPass = document.getElementById('oldPass').value;
-            const newPass = document.getElementById('newPass').value;
-            if (!oldPass || !newPass) { alert("Vui lòng nhập đủ thông tin!"); return; }
-            if (newPass.length < 6) { alert("Mật khẩu mới quá ngắn!"); return; }
-            const res = await fetchWithAuth('/api/change-password', { 
-                method: 'POST', 
-                body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }) 
-            });
-            if (res) {
-                const d = await res.json(); 
-                alert(d.message);
-                if(d.success) { 
-                    document.getElementById('oldPass').value = ''; 
-                    document.getElementById('newPass').value = ''; 
-                }
-            }
-        }
-        async function loadUserList() {
-            if (currentUser !== 'Mikeyiy') return;
-            const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-            const res = await fetchWithAuth('/api/list-users', { method: 'POST' });
-            if (res) {
-                const data = await res.json(); tbody.innerHTML = '';
-                if (data.success) {
-                    data.users.forEach(u => {
-                        let actionHtml = '';
-                        if (u.username === 'Mikeyiy') {
-                            actionHtml = '<span class="tag ok" style="background:#4f46e5; color:white;">SUPER ADMIN</span>';
-                        } else {
-                            let roleBtn = '';
-                            if (u.role === 'admin') roleBtn = `<button class="btn" style="background:#f59e0b; color:white; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`;
-                            else roleBtn = `<button class="btn btn-primary" style="background:#4f46e5; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
-                            const deleteBtn = `<button class="btn" style="background:#ef4444; color:white; padding:5px 10px; font-size:12px; margin:0; margin-left:5px;" onclick="deleteUser('${u.username}')"><i class='bx bx-trash'></i> Xóa</button>`;
-                            actionHtml = `<div style="display:flex;">${roleBtn} ${deleteBtn}</div>`;
-                        }
-                        tbody.insertAdjacentHTML('beforeend', `<tr><td><b>${u.username}</b></td><td>${u.email}</td><td><span class="tag ${u.role==='admin'?'ok':'warn'}">${u.role}</span></td><td>${actionHtml}</td></tr>`);
-                    });
-                }
-            }
-        }
-        async function changeRole(target, newRole) {
-            if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
-            await fetchWithAuth('/api/set-user-role', { 
-                method: 'POST', 
-                body: JSON.stringify({ targetUser: target, newRole }) 
-            });
-            loadUserList();
-        }
-        async function deleteUser(target) {
-            if (!confirm(`⚠️ CẢNH BÁO!\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản [${target}] không?`)) return;
-            const res = await fetchWithAuth('/api/delete-user', { 
-                method: 'POST', 
-                body: JSON.stringify({ targetUser: target }) 
-            });
-            if (res) {
-                const data = await res.json();
-                alert(data.message);
-                if (data.success) loadUserList();
-            }
-        }
+        async function togglePump() { if (userRole !== 'admin') return; const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active'); const action = isCurrentlyOn ? 'OFF' : 'ON'; document.getElementById('pumpText').innerText = "Đang gửi..."; const res = await fetchWithAuth('/api/control-pump', { method: 'POST', body: JSON.stringify({ action }) }); if (res) { const data = await res.json(); if(data.success) console.log("Sent:", action); else alert("Lỗi: " + data.message); } }
+        async function changePassword() { const oldPass = document.getElementById('oldPass').value; const newPass = document.getElementById('newPass').value; if (!oldPass || !newPass) { alert("Vui lòng nhập đủ thông tin!"); return; } if (newPass.length < 6) { alert("Mật khẩu mới quá ngắn!"); return; } const res = await fetchWithAuth('/api/change-password', { method: 'POST', body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass }) }); if (res) { const d = await res.json(); alert(d.message); if(d.success) { document.getElementById('oldPass').value = ''; document.getElementById('newPass').value = ''; } } }
+        async function loadUserList() { if (currentUser !== 'Mikeyiy') return; const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>'; const res = await fetchWithAuth('/api/list-users', { method: 'POST' }); if (res) { const data = await res.json(); tbody.innerHTML = ''; if (data.success) { data.users.forEach(u => { let actionHtml = ''; if (u.username === 'Mikeyiy') { actionHtml = '<span class="tag ok" style="background:#4f46e5; color:white;">SUPER ADMIN</span>'; } else { let roleBtn = ''; if (u.role === 'admin') roleBtn = `<button class="btn" style="background:#f59e0b; color:white; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`; else roleBtn = `<button class="btn btn-primary" style="background:#4f46e5; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`; const deleteBtn = `<button class="btn" style="background:#ef4444; color:white; padding:5px 10px; font-size:12px; margin:0; margin-left:5px;" onclick="deleteUser('${u.username}')"><i class='bx bx-trash'></i> Xóa</button>`; actionHtml = `<div style="display:flex;">${roleBtn} ${deleteBtn}</div>`; } tbody.insertAdjacentHTML('beforeend', `<tr><td><b>${u.username}</b></td><td>${u.email}</td><td><span class="tag ${u.role==='admin'?'ok':'warn'}">${u.role}</span></td><td>${actionHtml}</td></tr>`); }); } } }
+        async function changeRole(target, newRole) { if(!confirm(`Đổi quyền ${target}?`)) return; await fetchWithAuth('/api/set-user-role', { method: 'POST', body: JSON.stringify({ targetUser: target, newRole: newRole }) }); loadUserList(); }
+        async function deleteUser(target) { if (!confirm(`Xóa ${target}?`)) return; const res = await fetchWithAuth('/api/delete-user', { method: 'POST', body: JSON.stringify({ targetUser: target }) }); if (res) { const data = await res.json(); alert(data.message); if (data.success) loadUserList(); } }
         function switchTab(id, el) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); if(el) { document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); } }
         function logout() { if(confirm("Đăng xuất?")) { localStorage.clear(); window.location.href='index.html'; } }
         function saveProfile() { location.reload(); }
@@ -768,7 +487,6 @@
                 const topic = msg.destinationName;
                 const payload = msg.payloadString;
 
-                // --- 1. XỬ LÝ DỮ LIỆU CHÍNH ---
                 if (topic === mqttTopic) {
                     try { 
                         const data = JSON.parse(payload);
@@ -780,128 +498,46 @@
                         else if (data.isPumpOn === false && lastPumpState === true) addLogRecord("✅ Đã xử lý xong", `Độ sâu giảm còn: ${depthCM} cm`, "Bơm ĐÃ TẮT", "ok");
                         lastPumpState = data.isPumpOn;
 
-                        // --- [MỚI] HIỂN THỊ CẢ 2 ĐƠN VỊ ---
-                        document.getElementById('waterLevelText').innerHTML = 
-                            depthCM + " cm <div style='font-size:16px; color:#9ca3af; margin-top:5px;'>(" + data.waterLevel + "%)</div>";
-
+                        document.getElementById('waterLevelText').innerHTML = depthCM + " cm <div style='font-size:16px; color:#9ca3af; margin-top:5px;'>(" + data.waterLevel + "%)</div>";
                         gaugeChart.updateSeries([data.waterLevel]);
                         const now = new Date().toLocaleTimeString();
                         lineChart.appendData([{ data: [{ x: now, y: depthCM }] }]);
 
-                        const btn = document.getElementById('btnPump');
-                        const txtPump = document.getElementById('pumpText');
+                        const btn = document.getElementById('btnPump'); const txtPump = document.getElementById('pumpText');
                         if(data.isPumpOn) { btn.classList.add('active'); if(userRole === 'admin') txtPump.innerText = "ĐANG CHẠY"; } 
                         else { btn.classList.remove('active'); if(userRole === 'admin') txtPump.innerText = "ĐANG TẮT"; }
 
-                        const alertBox = document.getElementById('statusAlert');
-                        const sirenTxt = document.getElementById('sirenText');
+                        const alertBox = document.getElementById('statusAlert'); const sirenTxt = document.getElementById('sirenText');
                         if (data.isSirenOn) { alertBox.className = 'alert-box danger'; alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!"; sirenTxt.innerText = "ĐANG KÊU 🔊"; sirenTxt.style.color = "#ef4444"; sirenTxt.style.fontWeight = "bold"; } 
                         else { alertBox.className = 'alert-box'; alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn"; sirenTxt.innerText = "Im lặng"; sirenTxt.style.color = "var(--secondary)"; }
                     } catch(e){ console.error("Lỗi MQTT:", e); }
                 }
 
-                // --- 2. XỬ LÝ DYNAMIC DEVICES ---
+                // [MỚI] Tự động ghi log khi thiết bị mở rộng bật/tắt
                 customDevices.forEach((dev, index) => {
                     if (dev.topic === topic) {
-                        if (dev.type === 'sensor') {
-                            document.getElementById(`val-${index}`).innerText = payload;
-                        } else if (dev.type === 'switch') {
+                        if (dev.type === 'sensor') { document.getElementById(`val-${index}`).innerText = payload; } 
+                        else if (dev.type === 'switch') { 
+                            // Nếu trạng thái thay đổi thì ghi log
+                            if (dev.value !== payload) {
+                                addLogRecord("⚡ THIẾT BỊ MỞ RỘNG", `${dev.name} đã chuyển sang ${payload}`, "OK", "ok");
+                            }
                             dev.value = payload; 
-                            const btn = document.getElementById(`btn-${index}`);
-                            const txt = document.getElementById(`txt-${index}`);
-                            if(payload === 'ON') { btn.classList.add('active'); txt.innerText = "ON"; }
-                            else { btn.classList.remove('active'); txt.innerText = "OFF"; }
+                            const btn = document.getElementById(`btn-${index}`); 
+                            const txt = document.getElementById(`txt-${index}`); 
+                            if(payload === 'ON') { btn.classList.add('active'); txt.innerText = "ON"; } else { btn.classList.remove('active'); txt.innerText = "OFF"; } 
                         }
                     }
                 });
             };
 
-            client.connect({ 
-                onSuccess: () => { 
-                    client.subscribe(mqttTopic); 
-                    // [MỚI] Subscribe các topic thiết bị mới
-                    customDevices.forEach(dev => {
-                        client.subscribe(dev.topic);
-                    });
-                    document.getElementById('mqttStatus').className = 'iot-status connected'; 
-                    document.getElementById('mqttText').innerText="Đã kết nối"; 
-                }, 
-                onFailure: (e) => { console.log("Lỗi:", e); document.getElementById('mqttText').innerText="Lỗi kết nối"; },
-                useSSL: true 
-            }); 
+            client.connect({ onSuccess: () => { client.subscribe(mqttTopic); customDevices.forEach(dev => { client.subscribe(dev.topic); }); document.getElementById('mqttStatus').className = 'iot-status connected'; document.getElementById('mqttText').innerText="Đã kết nối"; }, onFailure: (e) => { console.log("Lỗi:", e); document.getElementById('mqttText').innerText="Lỗi kết nối"; }, useSSL: true }); 
         }
 
         var lineChart = new ApexCharts(document.querySelector("#lineChart"), { series: [{name:'Độ sâu (cm)',data:[]}], chart: {type:'area',height:250,toolbar:{show:false}, animations: {enabled: true, easing: 'linear', dynamicAnimation: {speed: 1000}}}, stroke:{curve:'smooth'}, xaxis: { type: 'category', range: 10 } }); lineChart.render();
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
 
-        async function exportData() {
-            const type = prompt("Bạn muốn xuất file gì?\nNhập 'csv' để xuất Excel\nNhập 'txt' để xuất file văn bản", "csv");
-            if (type !== 'csv' && type !== 'txt') return;
-
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "Đang tải...";
-            btn.disabled = true;
-
-            try {
-                const res = await fetchWithAuth('/api/sensor-history', { method: 'POST' });
-                if (!res) return;
-
-                const responseData = await res.json();
-                if (!responseData.success) {
-                    alert("Lỗi server: " + responseData.message);
-                    return;
-                }
-
-                const dataList = responseData.data;
-                if (!dataList || dataList.length === 0) {
-                    alert("Chưa có dữ liệu lịch sử nào!");
-                    return;
-                }
-
-                let fileContent = "";
-                let fileName = `Sensor_Log_${new Date().getTime()}`;
-                let mimeType = "";
-
-                if (type === 'csv') {
-                    fileContent = "\uFEFFThời gian,Mực nước (%),Máy bơm,Còi báo động\n"; 
-                    dataList.forEach(item => {
-                        const time = new Date(item.timestamp).toLocaleString('vi-VN');
-                        const pump = item.isPumpOn ? "ĐANG CHẠY" : "TẮT";
-                        const siren = item.isSirenOn ? "KÊU" : "Tắt";
-                        fileContent += `"${time}",${item.waterLevel},${pump},${siren}\n`;
-                    });
-                    fileName += ".csv";
-                    mimeType = "text/csv;charset=utf-8;";
-                } else {
-                    fileContent = "=== NHẬT KÝ HOẠT ĐỘNG HỆ THỐNG SHADOWFOX ===\n\n";
-                    dataList.forEach(item => {
-                        const time = new Date(item.timestamp).toLocaleString('vi-VN');
-                        fileContent += `[${time}] Mực nước: ${item.waterLevel}% | Bơm: ${item.isPumpOn ? 'ON' : 'OFF'} | Còi: ${item.isSirenOn ? 'ON' : 'OFF'}\n`;
-                    });
-                    fileName += ".txt";
-                    mimeType = "text/plain;charset=utf-8;";
-                }
-
-                const blob = new Blob([fileContent], { type: mimeType });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                link.style.display = "none";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                alert("Đã xuất file thành công!");
-
-            } catch (e) {
-                console.error(e);
-                alert("Lỗi khi xuất dữ liệu!");
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        }
+        async function exportData() { const btn = event.target; const originalText = btn.innerText; btn.innerText = "Đang tải..."; btn.disabled = true; try { const res = await fetchWithAuth('/api/sensor-history', { method: 'POST' }); if (!res) return; const responseData = await res.json(); if (!responseData.success) { alert("Lỗi: " + responseData.message); return; } const dataList = responseData.data; if (!dataList || dataList.length === 0) { alert("Chưa có dữ liệu!"); return; } let fileContent = ""; let fileName = `Log_${new Date().getTime()}`; let mimeType = ""; const type = prompt("Nhập 'csv' hoặc 'txt':", "csv"); if (type === 'csv') { fileContent = "\uFEFFThời gian,Mực nước (%),Bơm,Còi\n"; dataList.forEach(item => { const time = new Date(item.timestamp).toLocaleString('vi-VN'); fileContent += `"${time}",${item.waterLevel},${item.isPumpOn?'ON':'OFF'},${item.isSirenOn?'ON':'OFF'}\n`; }); fileName += ".csv"; mimeType = "text/csv;charset=utf-8;"; } else { fileContent = "NHẬT KÝ\n"; dataList.forEach(item => { const time = new Date(item.timestamp).toLocaleString('vi-VN'); fileContent += `[${time}] Level: ${item.waterLevel}%\n`; }); fileName += ".txt"; mimeType = "text/plain;charset=utf-8;"; } const blob = new Blob([fileContent], { type: mimeType }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = fileName; link.style.display = "none"; document.body.appendChild(link); link.click(); document.body.removeChild(link); alert("Đã xuất file!"); } catch (e) { console.error(e); alert("Lỗi!"); } finally { btn.innerText = originalText; btn.disabled = false; } }
 
         init();
     </script>
