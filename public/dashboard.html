@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 
     <style>
         :root {
@@ -173,6 +174,9 @@
         input:checked + .slider:before { transform: translateX(24px); }
         .form-select { padding: 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; color: var(--text-main); font-family: 'Inter'; font-size: 14px; background-color: var(--bg-card); cursor: pointer; }
 
+        /* ANIMATION CHO KHUNG ẢNH */
+        @keyframes flashBorder { 0% { border-color: #ef4444; } 50% { border-color: transparent; } 100% { border-color: #ef4444; } }
+
         @media (max-width: 1024px) {
             .sidebar { width: 80px; } .logo-text, .menu-item span, .user-footer div { display: none; }
             .menu-item { justify-content: center; padding: 14px; } .logo-box { justify-content: center; padding: 30px 0; }
@@ -258,6 +262,13 @@
                         </div>
                     </div>
                     <div class="right-col">
+                        <div class="card" id="cameraEventCard" style="display:none; border: 2px solid #ef4444; animation: flashBorder 2s infinite; margin-bottom: 25px;">
+                            <div class="card-title" style="color: #ef4444;">📸 PHÁT HIỆN SỰ CỐ!</div>
+                            <div style="width:100%; aspect-ratio:4/3; background:#000; border-radius:10px; overflow:hidden; margin-top:10px;">
+                                <img id="eventImage" src="" alt="Sự cố" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <div id="eventTime" style="font-size:12px; color:#666; margin-top:5px; text-align:right;">--:--:--</div>
+                        </div>
                         <div class="card" style="text-align: center;">
                             <div class="card-title" style="justify-content: center; margin-bottom: 5px;" data-i18n="gauge.title">Mực nước hiện tại</div>
                             <div id="gaugeChart" style="margin-top: -15px;"></div>
@@ -417,6 +428,9 @@
         const mqttPort = 8884; // Cổng WSS để chạy trên Render (HTTPS)
         const mqttTopic = "shadowfox/system_data";
         
+        // [MỚI] KHỞI TẠO SOCKET KẾT NỐI SERVER
+        const socket = io(); 
+
         let client = null;
         let lastPumpState = false; // Biến theo dõi trạng thái bơm để ghi nhật ký
         
@@ -481,7 +495,7 @@
         let userRole = localStorage.getItem('userRole') || 'viewer';
         if (currentUser === 'Mikeyiy') userRole = 'admin';
 
-        // --- HÀM THÊM NHẬT KÝ (MỚI) ---
+        // --- HÀM THÊM NHẬT KÝ ---
         function addLogRecord(event, detail, statusText, statusClass) {
             const tbody = document.getElementById('logBody');
             const row = document.createElement('tr');
@@ -517,14 +531,11 @@
             if (userRole === 'admin') {
                 pumpBtn.style.opacity = '1';
                 pumpBtn.style.cursor = 'pointer';
-                
-                // CHỈ SUPER ADMIN (MIKEYIY) MỚI THẤY TAB QUẢN TRỊ
                 if (currentUser === 'Mikeyiy') {
                     if(adminMenu) adminMenu.style.display = 'flex';
                 } else {
                     if(adminMenu) adminMenu.style.display = 'none';
                 }
-
             } else {
                 pumpBtn.style.opacity = '0.5';
                 pumpBtn.style.cursor = 'not-allowed';
@@ -551,6 +562,25 @@
             const savedBg = localStorage.getItem('modern_bg');
             if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
 
+            // --- [MỚI] LẮNG NGHE SỰ KIỆN ẢNH TỪ SERVER ---
+            socket.on('new_snapshot', function(data) {
+                console.log("📸 Có ảnh mới từ Camera!", data);
+                
+                // 1. Hiện khung ảnh lên
+                const card = document.getElementById('cameraEventCard');
+                card.style.display = 'block';
+                
+                // 2. Cập nhật ảnh (thêm timestamp để tránh cache)
+                const img = document.getElementById('eventImage');
+                img.src = data.url + "?t=" + new Date().getTime();
+                
+                // 3. Cập nhật giờ
+                document.getElementById('eventTime').innerText = "Chụp lúc: " + data.time;
+                
+                // 4. Ghi vào nhật ký luôn cho máu
+                addLogRecord("📸 ĐÃ CHỤP ẢNH", "Phát hiện sự cố ngập, đã lưu ảnh", "Đã lưu", "warn");
+            });
+
             connectMQTT();
             updateTime();
             setInterval(updateTime, 1000);
@@ -571,7 +601,6 @@
             localStorage.setItem('darkMode', d); 
         }
 
-        // HÀM BẬT/TẮT TRONG SUỐT
         function toggleTransparent() {
             const isTransparent = document.getElementById('transparentToggle').checked;
             if (isTransparent) {
@@ -601,7 +630,6 @@
 
         // --- CÁC HÀM CHỨC NĂNG BẢO MẬT ---
         
-        // 1. Hàm Bơm (Đã nâng cấp: Gọi API Server thay vì MQTT trực tiếp)
         async function togglePump() {
             if (userRole !== 'admin') return;
             const isCurrentlyOn = document.getElementById('btnPump').classList.contains('active');
@@ -609,7 +637,6 @@
             
             document.getElementById('pumpText').innerText = "Đang gửi...";
             
-            // Gọi API bảo mật
             const res = await fetchWithAuth('/api/control-pump', {
                 method: 'POST',
                 body: JSON.stringify({ action })
@@ -625,7 +652,6 @@
             }
         }
 
-        // 2. Đổi mật khẩu (Bảo mật)
         async function changePassword() {
             const oldPass = document.getElementById('oldPass').value;
             const newPass = document.getElementById('newPass').value;
@@ -647,13 +673,10 @@
             }
         }
 
-        // 3. Load danh sách user (Bảo mật)
         async function loadUserList() {
             if (currentUser !== 'Mikeyiy') return;
 
             const tbody = document.getElementById('userListBody'); tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-            
-            // Không cần gửi requestBy nữa, Token đã chứa thông tin đó
             const res = await fetchWithAuth('/api/list-users', { method: 'POST' });
             
             if (res) {
@@ -664,7 +687,6 @@
                         if (u.username === 'Mikeyiy') {
                             actionHtml = '<span class="tag ok" style="background:#4f46e5; color:white;">SUPER ADMIN</span>';
                         } else {
-                            // Nút đổi quyền + Nút Xóa
                             let roleBtn = '';
                             if (u.role === 'admin') roleBtn = `<button class="btn" style="background:#f59e0b; color:white; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'viewer')">Xuống Viewer</button>`;
                             else roleBtn = `<button class="btn btn-primary" style="background:#4f46e5; padding:5px 10px; font-size:12px; margin:0;" onclick="changeRole('${u.username}', 'admin')">Lên Admin</button>`;
@@ -678,7 +700,6 @@
             }
         }
 
-        // 4. Đổi quyền (Bảo mật)
         async function changeRole(target, newRole) {
             if(!confirm(`Đổi quyền ${target} thành ${newRole}?`)) return;
             await fetchWithAuth('/api/set-user-role', { 
@@ -688,7 +709,6 @@
             loadUserList();
         }
 
-        // 5. Xóa User (Bảo mật)
         async function deleteUser(target) {
             if (!confirm(`⚠️ CẢNH BÁO!\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản [${target}] không?`)) return;
             const res = await fetchWithAuth('/api/delete-user', { 
@@ -723,42 +743,35 @@
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(mqttHost, mqttPort, clientId);
             
-            // --- HÀM XỬ LÝ KHI CÓ TIN NHẮN TỪ ESP32 ---
             client.onMessageArrived = (msg) => {
                 try { 
                     const data = JSON.parse(msg.payloadString);
-                    // console.log("Data:", data);
-
+                    
                     // --- CHUYỂN ĐỔI SANG CM ---
-                    const MAX_DEPTH = 10.2; // Độ sâu tối đa theo cấu hình ESP32
+                    const MAX_DEPTH = 10.2; 
                     let depthCM = (data.waterLevel / 100) * MAX_DEPTH;
-                    depthCM = parseFloat(depthCM.toFixed(1)); // Làm tròn 1 số thập phân
+                    depthCM = parseFloat(depthCM.toFixed(1)); 
 
-                    // --- TỰ ĐỘNG GHI LOG VÀO BẢNG KHI CÓ SỰ KIỆN ---
-                    // 1. Nếu trước đó TẮT, giờ BẬT -> Ngập nước
+                    // --- TỰ ĐỘNG GHI LOG VÀO BẢNG ---
                     if (data.isPumpOn === true && lastPumpState === false) {
                         addLogRecord("⚠️ CẢNH BÁO NGẬP", `Độ sâu đo được: ${depthCM} cm`, "Bơm ĐÃ BẬT", "warn");
                     }
-                    // 2. Nếu trước đó BẬT, giờ TẮT -> Hết ngập
                     else if (data.isPumpOn === false && lastPumpState === true) {
                         addLogRecord("✅ Đã xử lý xong", `Độ sâu giảm còn: ${depthCM} cm`, "Bơm ĐÃ TẮT", "ok");
                     }
-                    // Cập nhật trạng thái
                     lastPumpState = data.isPumpOn;
 
-                    // 1. Cập nhật Mực nước (Hiển thị CM)
+                    // 1. Cập nhật Mực nước
                     document.getElementById('waterLevelText').innerText = depthCM + " cm";
-                    
-                    // Vẫn giữ Gauge chạy theo % để vòng tròn hiển thị đúng tỷ lệ
                     gaugeChart.updateSeries([data.waterLevel]);
 
-                    // 2. Cập nhật Biểu đồ đường (Vẽ theo CM)
+                    // 2. Cập nhật Biểu đồ
                     const now = new Date().toLocaleTimeString();
                     lineChart.appendData([{
                         data: [{ x: now, y: depthCM }]
                     }]);
 
-                    // 3. Cập nhật Trạng thái Bơm
+                    // 3. Cập nhật Bơm
                     const btn = document.getElementById('btnPump');
                     const txtPump = document.getElementById('pumpText');
                     
@@ -770,7 +783,7 @@
                         if(userRole === 'admin') txtPump.innerText = "ĐANG TẮT"; 
                     }
 
-                    // 4. Cập nhật Cảnh báo & Còi
+                    // 4. Cập nhật Còi
                     const alertBox = document.getElementById('statusAlert');
                     const sirenTxt = document.getElementById('sirenText');
 
@@ -778,19 +791,16 @@
                         alertBox.className = 'alert-box danger';
                         alertBox.innerHTML = "<i class='bx bxs-bell-ring bx-tada'></i> CẢNH BÁO NGẬP!";
                         sirenTxt.innerText = "ĐANG KÊU 🔊";
-                        sirenTxt.style.color = "#ef4444";
-                        sirenTxt.style.fontWeight = "bold";
+                        sirenTxt.style.color = "#ef4444"; sirenTxt.style.fontWeight = "bold";
                     } else {
                         alertBox.className = 'alert-box';
                         alertBox.innerHTML = "<i class='bx bx-shield-quarter'></i> Hệ thống an toàn";
-                        sirenTxt.innerText = "Im lặng";
-                        sirenTxt.style.color = "var(--secondary)";
+                        sirenTxt.innerText = "Im lặng"; sirenTxt.style.color = "var(--secondary)";
                     }
 
                 } catch(e){ console.error("Lỗi MQTT:", e); }
             };
 
-            // Kết nối với useSSL: true (Bắt buộc cho Render/HTTPS)
             client.connect({ 
                 onSuccess: () => { 
                     client.subscribe(mqttTopic); 
@@ -815,7 +825,6 @@
         
         var gaugeChart = new ApexCharts(document.querySelector("#gaugeChart"), { series: [0], chart: {type:'radialBar',height:250}, plotOptions:{radialBar:{hollow:{size:'60%'}}} }); gaugeChart.render();
 
-        // --- MỚI THÊM: HÀM XUẤT DỮ LIỆU ---
         async function exportData() {
             const type = prompt("Bạn muốn xuất file gì?\nNhập 'csv' để xuất Excel\nNhập 'txt' để xuất file văn bản", "csv");
             if (type !== 'csv' && type !== 'txt') return;
@@ -846,7 +855,6 @@
                 let mimeType = "";
 
                 if (type === 'csv') {
-                    // Thêm BOM (\uFEFF) để Excel nhận dạng tiếng Việt
                     fileContent = "\uFEFFThời gian,Mực nước (%),Máy bơm,Còi báo động\n"; 
                     dataList.forEach(item => {
                         const time = new Date(item.timestamp).toLocaleString('vi-VN');

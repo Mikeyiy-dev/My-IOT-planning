@@ -1,4 +1,4 @@
-// server.js - Đã nâng cấp: Lưu lịch sử & Xuất Excel
+// server.js - Đã nâng cấp: Lưu lịch sử & Xuất Excel & Xử lý Ảnh Camera
 require('dotenv').config(); // Load bảo mật từ file .env
 const express = require('express');
 const app = express();
@@ -10,6 +10,11 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
+
+// --- [MỚI] THƯ VIỆN ĐỂ XỬ LÝ ẢNH ---
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 // --- CẤU HÌNH ---
 const SUPER_ADMIN = "Mikeyiy"; 
@@ -36,17 +41,31 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// 2. Schema SensorData (Lưu lịch sử cảm biến - MỚI)
+// 2. Schema SensorData (Lưu lịch sử cảm biến)
 const SensorSchema = new mongoose.Schema({
-    timestamp: { type: Date, default: Date.now }, // Thời gian ghi
-    waterLevel: Number,                           // Mực nước (%)
-    isPumpOn: Boolean,                            // Bơm bật hay tắt
-    isSirenOn: Boolean                            // Còi bật hay tắt
+    timestamp: { type: Date, default: Date.now }, 
+    waterLevel: Number,                           
+    isPumpOn: Boolean,                            
+    isSirenOn: Boolean                            
 });
 const SensorData = mongoose.model('SensorData', SensorSchema);
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
+
+// --- [MỚI] CẤU HÌNH LƯU TRỮ ẢNH CAMERA ---
+const uploadDir = path.join(__dirname, 'public/uploads');
+// Tự động tạo thư mục 'uploads' nếu chưa có
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+        // Đặt tên file theo thời gian để không bị trùng: event_17154234.jpg
+        cb(null, 'event_' + Date.now() + '.jpg');
+    }
+});
+const upload = multer({ storage: storage });
 
 // --- MQTT ---
 const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
@@ -54,7 +73,7 @@ const TOPIC_DATA = 'shadowfox/system_data'; // Topic dữ liệu cảm biến
 const TOPIC_CMD = 'shadowfox/commands';     // Topic điều khiển
 
 mqttClient.on('connect', () => { 
-    // Đăng ký nhận tin từ cả topic dữ liệu và các topic khác nếu cần
+    // Đăng ký nhận tin từ cả topic dữ liệu
     mqttClient.subscribe(TOPIC_DATA); 
     console.log("✅ Đã kết nối MQTT và lắng nghe:", TOPIC_DATA);
 });
@@ -66,7 +85,7 @@ mqttClient.on('message', async (topic, message) => {
     // 1. Gửi ngay cho Frontend qua Socket (để vẽ biểu đồ realtime)
     io.emit('sensor_data', { topic, value: msgString });
 
-    // 2. LƯU VÀO DATABASE (Phần mới thêm)
+    // 2. LƯU VÀO DATABASE
     if (topic === TOPIC_DATA) {
         try {
             const data = JSON.parse(msgString);
@@ -80,11 +99,27 @@ mqttClient.on('message', async (topic, message) => {
 
             // Lưu vào MongoDB
             await newRecord.save();
-            // console.log(`💾 Đã lưu: Nước ${data.waterLevel}%`); 
         } catch (e) {
             console.error("❌ Lỗi lưu dữ liệu cảm biến:", e.message);
         }
     }
+});
+
+// --- [MỚI] API NHẬN ẢNH TỪ ESP32-CAM ---
+app.post('/api/upload-snapshot', upload.single('imageFile'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send("Lỗi: Không nhận được file ảnh!");
+    }
+    
+    console.log("📸 CAMERA: Đã nhận ảnh mới ->", req.file.filename);
+    
+    // Gửi ngay đường dẫn ảnh xuống Web Dashboard để hiện lên
+    io.emit('new_snapshot', { 
+        url: '/uploads/' + req.file.filename, 
+        time: new Date().toLocaleTimeString('vi-VN') 
+    });
+
+    res.status(200).send("Upload thành công");
 });
 
 // --- MIDDLEWARE BẢO MẬT ---
@@ -192,7 +227,7 @@ app.post('/api/change-password', authenticateToken, async (req, res) => {
     res.json({ success: true, message: "Đổi mật khẩu thành công!" });
 });
 
-// 6. API Lấy lịch sử dữ liệu (MỚI - Cho chức năng Export)
+// 6. API Lấy lịch sử dữ liệu (Cho chức năng Export)
 app.post('/api/sensor-history', authenticateToken, async (req, res) => {
     try {
         // Lấy 500 dòng dữ liệu mới nhất, sắp xếp từ mới đến cũ
@@ -204,11 +239,12 @@ app.post('/api/sensor-history', authenticateToken, async (req, res) => {
     }
 });
 
-// API Quên mật khẩu (Giữ nguyên logic cũ nếu có)
+// API Quên mật khẩu
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    // Logic gửi email reset pass ở đây (nếu bạn có code cũ thì paste lại vào đây)
+    // Logic gửi email reset pass ở đây
     res.json({ success: false, message: "Tính năng đang bảo trì" }); 
 });
 
-http.listen(3000, () => console.log('🚀 Server running with Sensor History...'));
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}...`));
