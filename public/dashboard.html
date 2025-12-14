@@ -418,7 +418,7 @@
         const mqttTopic = "shadowfox/system_data";
         
         let client = null;
-        let lastLevel = 0; let lastPump = false; let lastSiren = false;
+        let lastPumpState = false; // Biến theo dõi trạng thái bơm để ghi nhật ký
         
         // --- MIDDLEWARE BẢO MẬT: GỌI API KÈM TOKEN ---
         async function fetchWithAuth(url, options = {}) {
@@ -480,6 +480,22 @@
         const currentUser = localStorage.getItem('currentUser') || "Guest"; 
         let userRole = localStorage.getItem('userRole') || 'viewer';
         if (currentUser === 'Mikeyiy') userRole = 'admin';
+
+        // --- HÀM THÊM NHẬT KÝ (MỚI) ---
+        function addLogRecord(event, detail, statusText, statusClass) {
+            const tbody = document.getElementById('logBody');
+            const row = document.createElement('tr');
+            const time = new Date().toLocaleTimeString('vi-VN');
+            
+            row.innerHTML = `
+                <td>${time}</td>
+                <td style="font-weight: 600;">${event}</td>
+                <td>${detail}</td>
+                <td><span class="tag ${statusClass}">${statusText}</span></td>
+            `;
+            tbody.insertBefore(row, tbody.firstChild);
+            if(tbody.children.length > 50) tbody.removeChild(tbody.lastChild);
+        }
 
         // --- 4. KHỞI TẠO ---
         function init() {
@@ -711,12 +727,24 @@
             client.onMessageArrived = (msg) => {
                 try { 
                     const data = JSON.parse(msg.payloadString);
-                    console.log("Data:", data);
+                    // console.log("Data:", data);
 
                     // --- CHUYỂN ĐỔI SANG CM ---
                     const MAX_DEPTH = 10.2; // Độ sâu tối đa theo cấu hình ESP32
                     let depthCM = (data.waterLevel / 100) * MAX_DEPTH;
                     depthCM = parseFloat(depthCM.toFixed(1)); // Làm tròn 1 số thập phân
+
+                    // --- TỰ ĐỘNG GHI LOG VÀO BẢNG KHI CÓ SỰ KIỆN ---
+                    // 1. Nếu trước đó TẮT, giờ BẬT -> Ngập nước
+                    if (data.isPumpOn === true && lastPumpState === false) {
+                        addLogRecord("⚠️ CẢNH BÁO NGẬP", `Độ sâu đo được: ${depthCM} cm`, "Bơm ĐÃ BẬT", "warn");
+                    }
+                    // 2. Nếu trước đó BẬT, giờ TẮT -> Hết ngập
+                    else if (data.isPumpOn === false && lastPumpState === true) {
+                        addLogRecord("✅ Đã xử lý xong", `Độ sâu giảm còn: ${depthCM} cm`, "Bơm ĐÃ TẮT", "ok");
+                    }
+                    // Cập nhật trạng thái
+                    lastPumpState = data.isPumpOn;
 
                     // 1. Cập nhật Mực nước (Hiển thị CM)
                     document.getElementById('waterLevelText').innerText = depthCM + " cm";
